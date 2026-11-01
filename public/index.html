@@ -5,11 +5,32 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="robots" content="noindex">
   <title>Fotografía de los Estudiantes | Fountain of Life Student Photography</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@600;800;900&display=swap" rel="stylesheet">
   <style>
-    :root { --bg: #f7f6f3; --fg: #1d1d1b; --muted: #6b6a66; }
+    :root { --bg: #f7f6f3; --fg: #1d1d1b; --muted: #6b6a66; --band: #1F7CC2; }
     @media (prefers-color-scheme: dark) { :root { --bg: #111110; --fg: #f2f1ed; --muted: #a3a29d; } }
-    body { margin: 0; min-height: 100vh; display: grid; place-items: center; padding: 16px;
+    body { margin: 0; min-height: 100vh; display: flex; flex-direction: column;
            background: var(--bg); color: var(--fg); font: 18px/1.5 system-ui, sans-serif; text-align: center; }
+
+    .banner { background: var(--band); color: #fff; font-family: 'Nunito', system-ui, sans-serif; }
+    .banner-inner { max-width: 1100px; margin: 0 auto; padding: 32px 16px; box-sizing: border-box;
+                    display: flex; align-items: center; justify-content: center; gap: 32px; text-align: left; }
+    .crest { width: 200px; height: 200px; flex: none; }
+    .banner-text { display: flex; flex-direction: column; gap: 4px; }
+    .kicker { font-size: 26px; font-weight: 900; letter-spacing: 4px; line-height: 1.2; }
+    .school { font-size: clamp(2.4rem, 6vw, 4rem); font-weight: 900; line-height: 1; margin: 0; }
+    .gallery { font-size: clamp(1.3rem, 3vw, 1.9rem); font-weight: 800; margin-top: 6px; line-height: 1.2; }
+    .gallery-en { font-size: 1.05rem; font-weight: 600; color: #EEF6FD; }
+
+    @media (max-width: 640px) {
+      .banner-inner { flex-direction: column; text-align: center; gap: 20px; padding: 28px 16px; }
+      .crest { width: 150px; height: 150px; }
+      .kicker { font-size: 20px; letter-spacing: 3px; }
+    }
+
+    main { flex: 1; display: grid; place-items: center; padding: 48px 16px; }
     h1, h2 { font-size: clamp(1.6rem, 5vw, 2.4rem); margin: 0 0 .5rem; }
     p { color: var(--muted); margin: .25rem 0; }
     .loc { color: var(--fg); font-weight: 500; }
@@ -17,18 +38,63 @@
   </style>
 </head>
 <body>
+  <header class="banner">
+    <div class="banner-inner">
+      <svg class="crest" viewBox="0 0 400 400" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+        <defs>
+          <path id="crestTop" d="M 50,200 A 150,150 0 0,1 350,200"></path>
+          <path id="crestBot" d="M 28,200 A 172,172 0 0,0 372,200"></path>
+        </defs>
+        <circle cx="200" cy="200" r="192" fill="#FFFFFF"></circle>
+        <circle cx="200" cy="200" r="186" fill="#2B8BD2"></circle>
+        <circle cx="200" cy="200" r="133" fill="#FFFFFF"></circle>
+        <circle cx="200" cy="200" r="122" fill="#23317A"></circle>
+        <circle cx="200" cy="200" r="118" fill="#3A78C2"></circle>
+        <polygon points="270,200 235,260.6 165,260.6 130,200 165,139.4 235,139.4" fill="#A9D4F2"></polygon>
+        <g stroke="#23317A" stroke-width="3.5" stroke-linecap="round">
+          <line x1="270" y1="200" x2="202.1" y2="318"></line>
+          <line x1="235" y1="260.6" x2="98.9" y2="260.8"></line>
+          <line x1="165" y1="260.6" x2="96.8" y2="142.8"></line>
+          <line x1="130" y1="200" x2="197.9" y2="82"></line>
+          <line x1="165" y1="139.4" x2="301.1" y2="139.2"></line>
+          <line x1="235" y1="139.4" x2="303.2" y2="257.2"></line>
+        </g>
+        <polygon points="92,214 200,240 308,214 308,226 200,254 92,226" fill="#23317A"></polygon>
+        <polygon points="200,240 92,214 122,160 200,184" fill="#FFFFFF" stroke="#23317A" stroke-width="3" stroke-linejoin="round"></polygon>
+        <polygon points="200,240 308,214 278,160 200,184" fill="#FFFFFF" stroke="#23317A" stroke-width="3" stroke-linejoin="round"></polygon>
+        <g stroke="#8EC0E6" stroke-width="3" stroke-linecap="round">
+          <line x1="118" y1="175" x2="194" y2="198"></line>
+          <line x1="111" y1="189" x2="194" y2="212"></line>
+          <line x1="282" y1="175" x2="206" y2="198"></line>
+          <line x1="289" y1="189" x2="206" y2="212"></line>
+        </g>
+        <text font-family="Nunito, system-ui, sans-serif" font-weight="900" font-size="31" letter-spacing="2" fill="#FFFFFF"><textPath href="#crestTop" startOffset="50%" text-anchor="middle">MANANTIAL DE VIDA</textPath></text>
+        <text font-family="Nunito, system-ui, sans-serif" font-weight="900" font-size="26" letter-spacing="2.5" fill="#FFFFFF"><textPath href="#crestBot" startOffset="50%" text-anchor="middle">GALERÍA DE FOTOS</textPath></text>
+        <circle cx="35" cy="200" r="7" fill="#D9332B"></circle>
+        <circle cx="365" cy="200" r="7" fill="#D9332B"></circle>
+      </svg>
+      <div class="banner-text">
+        <div class="kicker">CENTRO EDUCATIVO</div>
+        <p class="school" style="color:#fff">Manantial de Vida</p>
+        <div class="gallery">Galería de fotos estudiantiles</div>
+        <div class="gallery-en" lang="en">Student Photo Gallery · Juan Tomás, República Dominicana</div>
+      </div>
+    </div>
+  </header>
   <main>
-    <section lang="es">
-      <h1>Fotografía de los Estudiantes de Fountain of Life</h1>
-      <p class="loc">Juan Tomás, República Dominicana</p>
-      <p>Galería próximamente.</p>
-    </section>
-    <hr>
-    <section lang="en">
-      <h2>Fountain of Life Student Photography</h2>
-      <p class="loc">Juan Tomás, Dominican Republic</p>
-      <p>Gallery coming soon.</p>
-    </section>
+    <div>
+      <section lang="es">
+        <h1>Fotografía de los Estudiantes de Fountain of Life</h1>
+        <p class="loc">Juan Tomás, República Dominicana</p>
+        <p>Galería próximamente.</p>
+      </section>
+      <hr>
+      <section lang="en">
+        <h2>Fountain of Life Student Photography</h2>
+        <p class="loc">Juan Tomás, Dominican Republic</p>
+        <p>Gallery coming soon.</p>
+      </section>
+    </div>
   </main>
 </body>
 </html>
