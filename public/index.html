@@ -55,20 +55,27 @@
     .gallery { font-size: clamp(1.25rem, 3vw, 1.8rem); font-weight: 800; margin-top: 6px; line-height: 1.2; }
     .gallery-sub { font-size: 1.05rem; font-weight: 600; color: #EEF6FD; }
 
-    /* Hero photo */
-    .hero { max-width: 1100px; margin: 40px auto 0; padding: 0 16px; }
+    /* Intro: description left, photo right */
+    .intro { max-width: 1100px; margin: 56px auto 0; padding: 0 16px;
+             display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 56px; align-items: start; }
+    .hero { margin: 0; position: sticky; top: 24px; }
     .hero img { display: block; width: 100%; height: auto; border-radius: 6px; background: var(--line); }
     .hero figcaption { font-size: 15px; color: var(--muted); margin-top: 10px; text-align: center; }
 
     /* Workshop description */
-    .about { max-width: 720px; margin: 56px auto 0; padding: 0 16px; }
+    .about { margin: 0; }
     .eyebrow { font: 800 14px/1.4 'Nunito', system-ui, sans-serif; letter-spacing: 2px; text-transform: uppercase;
                color: var(--accent); margin: 0 0 10px; }
-    h1 { font: 900 clamp(2.2rem, 6vw, 3.4rem)/1.05 'Nunito', system-ui, sans-serif; margin: 0 0 8px; }
+    h1 { font: 900 clamp(2.2rem, 5vw, 3.4rem)/1.05 'Nunito', system-ui, sans-serif; margin: 0 0 8px; }
     .meta { color: var(--muted); font-size: 17px; margin: 0 0 32px; padding-bottom: 28px; border-bottom: 1px solid var(--line); }
     .about p { margin: 0 0 1.2em; }
     .sig { font-weight: 600; margin-top: 28px; }
     .sig span { display: block; font-weight: 400; color: var(--muted); font-size: 16px; }
+
+    @media (max-width: 860px) {
+      .intro { grid-template-columns: 1fr; gap: 32px; margin-top: 24px; }
+      .hero { position: static; order: -1; }
+    }
 
     /* Students */
     .students { max-width: 1100px; margin: 72px auto 0; padding: 0 16px; }
@@ -84,8 +91,6 @@
       .banner-inner { flex-direction: column; text-align: center; gap: 18px; padding: 8px 16px 28px; }
       .crest { width: 140px; height: 140px; }
       .kicker { font-size: 19px; letter-spacing: 3px; }
-      .hero { margin-top: 24px; }
-      .about { margin-top: 40px; }
       body { font-size: 17px; }
     }
   </style>
@@ -145,18 +150,9 @@
   </header>
 
   <main>
-    <figure class="hero">
-      <img src="/img/workshop-group.jpg"
-           srcset="/img/workshop-group-1000.jpg 1000w, /img/workshop-group.jpg 2000w"
-           sizes="(max-width: 1100px) 100vw, 1068px"
-           width="2000" height="1204"
-           alt="Estudiantes del taller con el instructor Phillip Simon frente a la exposición de fotografías / Workshop students with instructor Phillip Simon in front of the photo exhibit">
-      <figcaption>
-        <span class="l-es">Participantes del taller con el instructor Phillip Simon.</span>
-        <span class="l-en">Workshop participants with instructor Phillip Simon.</span>
-      </figcaption>
-    </figure>
 
+    <div class="intro">
+      <div class="intro-text">
     <section class="about l-es" lang="es">
       <p class="eyebrow">Un taller de fotografía</p>
       <h1>Milagros cotidianos</h1>
@@ -178,6 +174,19 @@
       <p>The goal was not technical perfection, but to see with intention and share a personal point of view. We invite you to take your time, read the students’ words, and look at your own everyday world with fresh eyes.</p>
       <p class="sig">Phillip Simon<span>Instructor</span></p>
     </section>
+      </div>
+    <figure class="hero">
+      <img src="/img/workshop-group.jpg"
+           srcset="/img/workshop-group-1000.jpg 1000w, /img/workshop-group.jpg 2000w"
+           sizes="(max-width: 860px) 100vw, 560px"
+           width="2000" height="1204"
+           alt="Estudiantes del taller con el instructor Phillip Simon frente a la exposición de fotografías / Workshop students with instructor Phillip Simon in front of the photo exhibit">
+      <figcaption>
+        <span class="l-es">Participantes del taller con el instructor Phillip Simon.</span>
+        <span class="l-en">Workshop participants with instructor Phillip Simon.</span>
+      </figcaption>
+    </figure>
+    </div>
 
     <section class="students" aria-labelledby="studentsHeading">
       <h2 id="studentsHeading"><span class="l-es">Los estudiantes</span><span class="l-en">The Students</span></h2>
