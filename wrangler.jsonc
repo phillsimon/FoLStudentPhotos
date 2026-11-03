@@ -10,7 +10,17 @@
     "binding": "ASSETS",
     "not_found_handling": "single-page-application",
     // The Worker handles API calls and HTML pages (to set the page language before it loads).
-    "run_worker_first": ["/", "/index.html", "/estudiantes/*", "/api/*"]
+    "run_worker_first": ["/", "/index.html", "/estudiantes/*", "/api/*", "/entrar", "/clave", "/admin"]
   },
+  "vars": { "ADMIN_EMAIL": "phillip@insightful.media" },
+  "d1_databases": [
+    {
+      "binding": "DB",
+      "database_name": "fol-gallery-db",
+      "database_id": "REPLACE_WITH_DATABASE_ID"
+    }
+  ],
+  // Draft translations (Spanish to English) for statements.
+  "ai": { "binding": "AI" },
   "observability": { "enabled": true }
 }

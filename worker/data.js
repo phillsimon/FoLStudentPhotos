@@ -1,4 +1,4 @@
-// PLACEHOLDER DATA. This will be replaced by the D1 database and R2 photos.
+// PLACEHOLDER PHOTOS until R2 is in. Statements, captions and edits live in D1.
 
 const NAMES = ["Sergio", "Jadiel", "Dayanira", "Rainel", "Enma"];
 
@@ -7,12 +7,6 @@ const SHAPES = [
   [3, 2], [2, 3], [4, 3], [1, 1], [3, 2], [16, 9],
   [2, 3], [3, 2], [4, 5], [3, 2], [3, 4], [3, 2],
 ];
-
-const STATEMENT_EN =
-  "This is placeholder text for the artist statement. The student will write a few sentences here about what they photographed during the workshop, what they were looking for, and what the pictures mean to them.";
-const STATEMENT_ES =
-  "Este es un texto provisional para la declaración del artista. El estudiante escribirá aquí unas frases sobre lo que fotografió durante el taller, lo que buscaba y lo que significan las fotos para él o ella.";
-// (Placeholder statements above; students will write their own.)
 
 export const students = NAMES.map((name, i) => {
   const slug = name.toLowerCase();
@@ -27,14 +21,12 @@ export const students = NAMES.map((name, i) => {
   return {
     slug,
     first_name: name,
-    statement_en: STATEMENT_EN,
-    statement_es: STATEMENT_ES,
     cover_photo_id: photos[0].id,
     photos,
   };
 });
 
-// Workshop description (Phillip's text). Will move to the database so it can be edited in the admin.
+// Workshop description (Phillip's text). These are the defaults; edits are saved in D1 (site_content).
 export const site = {
   eyebrow_en: "A Photography Workshop",
   eyebrow_es: "Un taller de fotografía",
