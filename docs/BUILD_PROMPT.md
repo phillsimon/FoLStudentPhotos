@@ -71,6 +71,7 @@ Seed the super admin account from Worker secrets (`ADMIN_EMAIL`, `ADMIN_PASSWORD
 - Light/dark mode toggle in the header.
 
 ### Student page
+- URL: `/estudiantes/<first-name>`.
 - Student's first name as the page heading.
 - Artist statement, shown in the visitor's current language.
 - Photo grid of `thumb` images. Use a justified or masonry layout that preserves each photo's aspect ratio (no cropping). Lazy-load images.
@@ -131,7 +132,9 @@ Accessible at `/admin`, superadmin role only. Must be usable on a laptop and a t
 
 ## Branding and theming
 
-- I will supply the logo file (SVG or PNG) and the school's colors as hex values: **[PRIMARY: #______] [SECONDARY: #______] [ACCENT: #______]**. Build with placeholders and make all three editable in admin settings.
+- School name: **Centro Educativo Manantial de Vida** (English: Fountain of Life School). Lead with Spanish on the site and branding; the crest text stays Spanish in both languages.
+- Logo: the Manantial de Vida crest (SVG, in `src/components/Crest.jsx`).
+- Colors: primary blue **#1F7CC2** (the crest's bright blue), navy **#23317A**, red accent **#D9332B**. Headings in Nunito. Make colors editable in admin settings.
 - Define colors as CSS custom properties on `:root`. Provide a light theme and a dark theme.
 - For dark mode, use a near-black neutral background (not a tinted brand color) so photos read accurately; apply brand colors to the header, accents and links. For light mode, use an off-white neutral background.
 - Theme toggle: defaults to the visitor's system preference, remembers their choice in localStorage (wrapped in try/catch).
