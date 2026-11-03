@@ -1,22 +1,30 @@
+import { useState } from "react";
 import { Link } from "react-router-dom";
 import { usePrefs, useJson, imgUrl, studentPath } from "../prefs.jsx";
+import { useAuth } from "../auth.jsx";
+import Paragraphs from "../components/Paragraphs.jsx";
+import Pencil from "../components/Pencil.jsx";
+import { SiteEditor } from "../components/Editors.jsx";
 
 export default function Home() {
   const { t, pick } = usePrefs();
-  const { data, error } = useJson("/api/site");
+  const { data, error, reload } = useJson("/api/site");
+  const { user } = useAuth();
+  const [editing, setEditing] = useState(false);
 
   return (
     <>
       <div className="intro">
         <section className="about">
+          {data && user?.role === "superadmin" && (
+            <Pencil className="pencil-corner" label={t("editWorkshop")} onClick={() => setEditing(true)} />
+          )}
           {data ? (
             <>
               <p className="eyebrow">{pick(data, "eyebrow")}</p>
               <h1>{pick(data, "title")}</h1>
               <p className="meta">{pick(data, "meta")}</p>
-              {pick(data, "workshop").split(/\n\n+/).map((para, i) => (
-                <p key={i}>{para}</p>
-              ))}
+              <Paragraphs text={pick(data, "workshop")} />
               <p className="sig">
                 Phillip Simon<span>Instructor</span>
               </p>
@@ -55,6 +63,8 @@ export default function Home() {
           ))}
         </ul>
       </section>
+
+      {editing && <SiteEditor data={data} onClose={() => setEditing(false)} onSaved={reload} />}
     </>
   );
 }

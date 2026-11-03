@@ -1,9 +1,11 @@
 import { useEffect, useRef, useState } from "react";
 import { usePrefs, imgUrl } from "../prefs.jsx";
+import Paragraphs from "./Paragraphs.jsx";
+import Pencil from "./Pencil.jsx";
 
 const SLIDE_MS = 4000;
 
-export default function Lightbox({ photos, index, name, onGo, onClose }) {
+export default function Lightbox({ photos, index, name, onGo, onClose, onEdit }) {
   const { t } = usePrefs();
   const [playing, setPlaying] = useState(false);
   const dialogRef = useRef(null);
@@ -17,6 +19,7 @@ export default function Lightbox({ photos, index, name, onGo, onClose }) {
   // Keyboard: arrows, Escape, and keep Tab focus inside the dialog.
   useEffect(() => {
     const onKey = (e) => {
+      if (document.querySelector("dialog[open]")) return; // Typing in the edit pop-up.
       if (e.key === "ArrowLeft") prev();
       else if (e.key === "ArrowRight") next();
       else if (e.key === "Escape") onClose();
@@ -79,6 +82,16 @@ export default function Lightbox({ photos, index, name, onGo, onClose }) {
       <div className="lb-top">
         <span className="lb-count">{index + 1} / {count}</span>
         <div className="lb-top-actions">
+          {onEdit && (
+            <Pencil
+              className="pencil-lb"
+              label={t("editPhoto")}
+              onClick={() => {
+                setPlaying(false);
+                onEdit(photo.id);
+              }}
+            />
+          )}
           <button className="lb-btn" onClick={() => setPlaying((p) => !p)} aria-label={playing ? t("pause") : t("play")}>
             {playing ? "❚❚" : "▶"}
           </button>
@@ -92,7 +105,7 @@ export default function Lightbox({ photos, index, name, onGo, onClose }) {
         {(photo.title || photo.caption) && (
           <figcaption>
             {photo.title && <strong>{photo.title}</strong>}
-            {photo.caption && <span>{photo.caption}</span>}
+            {photo.caption && <div className="lb-caption"><Paragraphs text={photo.caption} /></div>}
           </figcaption>
         )}
       </figure>

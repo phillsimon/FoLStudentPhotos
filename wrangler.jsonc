@@ -1,6 +1,6 @@
 {
   "$schema": "node_modules/wrangler/config-schema.json",
-  "name": "fol-gallery",
+  "name": "folstudentphotos",
   "main": "worker/index.js",
   "compatibility_date": "2026-09-01",
   // Builds the React frontend into ./dist before every deploy.
@@ -17,7 +17,7 @@
     {
       "binding": "DB",
       "database_name": "fol-gallery-db",
-      "database_id": "REPLACE_WITH_DATABASE_ID"
+      "database_id": "b0621aac-99be-4ccc-ae0c-a14e64ed4a4f"
     }
   ],
   // Draft translations (Spanish to English) for statements.

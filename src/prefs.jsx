@@ -1,4 +1,4 @@
-import { createContext, useCallback, useContext, useEffect, useState } from "react";
+import { createContext, useCallback, useContext, useEffect, useRef, useState } from "react";
 import en from "./i18n/en.json";
 import es from "./i18n/es.json";
 
@@ -74,9 +74,14 @@ export const usePrefs = () => useContext(PrefsContext);
 
 export function useJson(url) {
   const [state, setState] = useState({ data: null, error: null });
+  const [tick, setTick] = useState(0);
+  const lastUrl = useRef(url);
   useEffect(() => {
+    if (!url) return;
     let live = true;
-    setState({ data: null, error: null });
+    // Keep what's on screen during a reload; only a new address starts blank.
+    if (lastUrl.current !== url) setState({ data: null, error: null });
+    lastUrl.current = url;
     fetch(url)
       .then((r) => (r.ok ? r.json() : Promise.reject(r.status)))
       .then((data) => live && setState({ data, error: null }))
@@ -84,8 +89,9 @@ export function useJson(url) {
     return () => {
       live = false;
     };
-  }, [url]);
-  return state;
+  }, [url, tick]);
+  const reload = useCallback(() => setTick((n) => n + 1), []);
+  return { ...state, reload };
 }
 
 export const imgUrl = (photo) => `/api/img/${photo.id}.svg`;

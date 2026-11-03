@@ -2,7 +2,7 @@
 
 ## Project summary
 
-Build a bilingual online photo gallery that displays in English or Spanish based on the visitor's country, with a button to switch languages, for a high school photography workshop I taught at the Fountain of Life School in Juan Tomás, Dominican Republic. Each student has their own page with a grid of their photographs, their first name, and a brief artist statement. Visitors browse low-resolution web images. Registered, admin-approved students can sign in and download full-resolution files of their own photographs for printing. I am the super admin and manage all content.
+Build a bilingual online photo gallery that displays in English or Spanish based on the visitor's country, with a button to switch languages, for a high school photography workshop I taught at the Fountain of Life School in Juan Tomás, Dominican Republic. Each student has their own page with a grid of their photographs, their first name, and a brief artist statement. Visitors browse low-resolution web images. Students with accounts I create can sign in and download full-resolution files of their own photographs for printing. I am the super admin and manage all content.
 
 The site must run entirely on the **Cloudflare free tier**.
 
@@ -54,7 +54,7 @@ The admin uploader must:
 
 - `students`: id, slug, first_name, statement_en, statement_es (the approved, public versions), statement_draft, statement_draft_lang (`en` | `es`), statement_status (`none` | `draft` | `submitted` | `changes_requested` | `approved`), statement_review_note, statement_submitted_at, statement_reviewed_at, cover_photo_id, sort_order, is_published, created_at, updated_at
 - `photos`: id, student_id, title, caption, text_updated_by (user id), text_updated_at, capture_date, width, height, original_bytes, original_key, web_key, thumb_key, sort_order, is_published, created_at
-- `users`: id, email, password_hash, display_name, role (`superadmin` | `student`), status (`pending` | `approved` | `disabled`), student_id (nullable link to the student gallery they own), created_at
+- `users`: id, login, password_hash, display_name, role (`superadmin` | `student`), student_slug (the gallery they own), must_change, temp_issued_at, password_changed_at, last_login_at, created_at
 - `sessions`: id, user_id, expires_at
 - `site_content`: key, value_en, value_es (for workshop description, homepage headings, footer text)
 - `site_settings`: key, value (logo key, hero image key, brand colors, whether students may download any photo or only their own)
@@ -88,31 +88,30 @@ Seed the super admin account from Worker secrets (`ADMIN_EMAIL`, `ADMIN_PASSWORD
 
 ## Student accounts and downloads
 
-- Registration form: first name, email, password. New accounts are `pending` until I approve them in the admin. Show a message, in the current language, explaining the account is awaiting approval.
-- On approval, I link the account to that student's gallery.
-- Sign in / sign out. No email sending is required; I reset passwords manually from the admin (generate a temporary password I can share).
-- Download route: `GET /api/photos/:id/download`. The Worker verifies the session, verifies the user is approved and owns the photo's student gallery (or that the site setting allows any approved student to download any photo), then streams the original from R2 with `Content-Disposition: attachment; filename="{FirstName}_{originalFilename}"`.
+- No public registration. Every student has an account, and their login is their first name. I create a temporary password on the Accounts screen in `/admin`; it is shown only once so I can send it.
+- At first login the student must choose a new password (at least 8 characters) before doing anything else. The server enforces this.
+- Sign in link is in the footer. No email sending; if a student forgets their password, I issue a new temporary one, which also signs them out everywhere.
+- My login is `phillip@insightful.media`, created from the `ADMIN_EMAIL` var and the `ADMIN_PASSWORD` secret.
+- Download route: `GET /api/photos/:id/download`. The Worker verifies the session, verifies the user owns the photo's student gallery (or that the site setting allows any student to download any photo), then streams the original from R2 with `Content-Disposition: attachment; filename="{FirstName}_{originalFilename}"`.
 - Originals must never be reachable without this check. No public R2 URLs for originals.
-- Rate-limit login attempts per IP and per email (store counters in D1).
+- Rate-limit login attempts per IP and per login (store counters in D1).
 
-### Students edit their own titles and captions
-- A signed-in, approved student can add or edit a **title** and/or **caption** on any photo in their own gallery. Both are optional.
-- Two places to do it:
-  - **"My photos" page** (linked from the header when signed in): a grid of the student's own photos, each with title and caption fields directly underneath, and a Save button per photo. This is the fast way to caption many photos at once. Must work well on a phone.
-  - **In the lightbox:** an "Edit title & caption" button appears on the student's own photos; it opens a small inline form over the image.
-- API: `PATCH /api/photos/:id` with `{ title, caption }`. The Worker verifies the session, that the user is approved, and that the photo belongs to the user's linked student gallery. Students cannot edit any other field or anyone else's photos.
-- Limits: title up to 100 characters, caption up to 500. Plain text only (strip HTML, preserve line breaks in captions). Show a live character count.
-- Students write in whichever language they choose; titles and captions display exactly as written, in both English and Spanish views.
-- Changes go live immediately. Record who made the change and when (`text_updated_by`, `text_updated_at`).
-- If a student clears a field, it stays empty (do not fall back to the Lightroom metadata).
+### Editing: pencils and pop-ups
+- When signed in, a **pencil icon** appears next to anything the person may edit. Clicking it opens a pop-up with that content. Visitors never see pencils. There is no separate "My photos" page.
+- **Line breaks in any editor become paragraph breaks** on the site.
+- Pop-ups must work well on a phone (full screen, large tap targets). The photo pop-up has "Save and next" for captioning many photos quickly.
+- **Students:** their own statement, and their own photo titles and captions.
+- **Me:** all of the above on every student page, plus the workshop text on the home page. My edits publish immediately.
 
-### Students write their own artist statement
-- On the "My photos" page, a signed-in, approved student has an **Artist statement** section where they write their statement in English or Spanish (they pick which). Up to 1,500 characters, plain text, line breaks preserved, live character count.
-- They can **Save draft** as often as they like, then **Submit for review** when ready. Once submitted, the text is locked until I respond.
-- The student always sees the current status in their language: Draft, Submitted (waiting for review), Changes requested, or Approved.
-- If I request edits, the student sees my note above their statement, edits it, and resubmits. Repeat until approved.
-- After approval, the student can revise and resubmit; the approved version stays live on their public page until I approve the new one.
-- Nothing the student writes appears publicly until I approve it. Until a student has an approved statement, their public page simply shows no statement.
+### Titles and captions
+- Limits: title up to 100 characters, caption up to 500. Plain text only. Live character count.
+- Display exactly as written in both English and Spanish views. Changes go live immediately. Record who changed them and when, and list student edits in `/admin`.
+
+### Artist statements
+- Students write in Spanish, up to 1,500 characters, and see only the Spanish version of their statement.
+- A student's pencil saves the text and submits it for my review. The current approved version stays live until I publish the new one. Nothing a student writes in a statement is public before I publish it.
+- Status shown: Waiting for review or Changes requested. If I request changes, the student sees my note and can edit and resubmit.
+- My pop-up shows Spanish and English side by side, with an English draft from Workers AI, and I can edit both. Publish needs both languages. If translation fails, I can write the English by hand.
 
 ## Super admin
 
@@ -120,13 +119,12 @@ Accessible at `/admin`, superadmin role only. Must be usable on a laptop and a t
 
 - **Students:** create, edit, delete, reorder, publish/unpublish. Edit first name, choose cover photo.
 - **Artist statement review:** a review queue lists every submitted statement, with a count badge in the admin navigation. For each one I can:
-  - **Approve.** Workers AI translates the student's text into the other language (Spanish → English or English → Spanish). I see both versions side by side, can edit either, then publish. The student's original wording is kept exactly as written; only the translation is editable by default.
+  - **Approve.** Each queue entry links to the student's page, where the pencil opens both languages side by side with an AI English draft. I can edit either, then publish.
   - **Request edits.** I write a note to the student (with a translate button so I can write it in English and send it in Spanish), and the statement goes back to them with status "Changes requested".
-  - Show a live preview of the statement in each language as it will appear.
   - I can still write or edit any statement directly myself, bypassing the student workflow (for example, for a student who doesn't register).
 - **Photos:** bulk upload (see workflow above), edit title/caption (I can override anything a student wrote; show a "Student edited" badge with the date on photos a student has changed, and a filter to list them), reorder by drag-and-drop, move to another student, publish/unpublish, delete (deletes all three R2 variants and the D1 row, with a confirmation).
 - **Homepage:** upload/replace logo and hero image, edit workshop description using the same English → Spanish translate-and-edit flow.
-- **Users:** list pending registrations, approve/disable, link a user to a student, reset password, delete.
+- **Accounts:** list each student's login and status, and issue temporary passwords.
 - **Settings:** brand colors, download policy (own photos only vs. all photos).
 - **Storage meter:** show total R2 bytes used (sum of stored sizes in D1) against the 10 GB free allowance, so I know where I stand.
 

@@ -1,5 +1,6 @@
-import { Link, Outlet, useLocation } from "react-router-dom";
+import { Link, Navigate, Outlet, useLocation } from "react-router-dom";
 import { usePrefs } from "../prefs.jsx";
+import { useAuth, homeFor } from "../auth.jsx";
 import Crest from "./Crest.jsx";
 
 function Toolbar() {
@@ -31,9 +32,29 @@ function BannerText() {
   );
 }
 
+function FooterAccount() {
+  const { t } = usePrefs();
+  const { user, ready, logout } = useAuth();
+  if (!ready) return null;
+  if (!user) return <p className="footer-account"><Link to="/entrar">{t("signIn")}</Link></p>;
+  return (
+    <p className="footer-account">
+      <span>{user.display_name}</span>
+      <Link to={homeFor(user)}>{t(user.role === "superadmin" ? "admin" : "myGallery")}</Link>
+      <Link to="/clave">{t("changePassword")}</Link>
+      <button type="button" className="linklike" onClick={logout}>{t("signOut")}</button>
+    </p>
+  );
+}
+
 export default function Layout() {
   const { t } = usePrefs();
-  const isHome = useLocation().pathname === "/";
+  const { user } = useAuth();
+  const { pathname } = useLocation();
+  const isHome = pathname === "/";
+
+  // A temporary password has to be replaced before anything else.
+  if (user?.must_change && pathname !== "/clave") return <Navigate to="/clave" replace />;
 
   return (
     <>
@@ -66,6 +87,7 @@ export default function Layout() {
       </main>
       <footer>
         Centro Educativo Manantial de Vida <span className="dot">●</span> {t("place")}
+        <FooterAccount />
       </footer>
     </>
   );
