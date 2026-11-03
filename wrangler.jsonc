@@ -1,12 +1,16 @@
 {
   "$schema": "node_modules/wrangler/config-schema.json",
   "name": "fol-gallery",
-  "main": "src/index.js",
+  "main": "worker/index.js",
   "compatibility_date": "2026-09-01",
+  // Builds the React frontend into ./dist before every deploy.
+  "build": { "command": "npm run build" },
   "assets": {
-    "directory": "./public",
+    "directory": "./dist",
     "binding": "ASSETS",
-    "run_worker_first": ["/", "/index.html", "/api/*"]
+    "not_found_handling": "single-page-application",
+    // The Worker handles API calls and HTML pages (to set the page language before it loads).
+    "run_worker_first": ["/", "/index.html", "/estudiantes/*", "/api/*"]
   },
   "observability": { "enabled": true }
 }

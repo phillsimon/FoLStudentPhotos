@@ -1,0 +1,156 @@
+/* School colors from the Manantial de Vida crest. */
+:root {
+  --bg: #f7f6f3; --surface: #ffffff; --fg: #1d1d1b; --muted: #5f5e5a; --line: #e2e0da;
+  --band: #1F7CC2; --band-ink: #ffffff; --accent: #1F7CC2; --red: #D9332B; --navy: #23317A;
+  --display: 'Nunito', system-ui, sans-serif;
+  color-scheme: light;
+}
+/* Dark mode: neutral near-black so photos read accurately. */
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #111110; --surface: #1a1a19; --fg: #f2f1ed; --muted: #a8a7a2; --line: #2c2c2a;
+    --band: #175f96; --accent: #6db3ea; color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #111110; --surface: #1a1a19; --fg: #f2f1ed; --muted: #a8a7a2; --line: #2c2c2a;
+  --band: #175f96; --accent: #6db3ea; color-scheme: dark;
+}
+
+* { box-sizing: border-box; }
+body { margin: 0; background: var(--bg); color: var(--fg);
+       font: 18px/1.65 system-ui, -apple-system, "Segoe UI", sans-serif; }
+img { display: block; max-width: 100%; }
+a { color: var(--accent); }
+button { font: inherit; cursor: pointer; }
+:focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; }
+.status { color: var(--muted); }
+
+/* ---------- Banner (home) ---------- */
+.banner { background: var(--band); color: var(--band-ink); font-family: var(--display); }
+.toolbar { max-width: 1100px; margin: 0 auto; padding: 12px 16px 0; display: flex; justify-content: flex-end; }
+.toolbar-actions { display: flex; gap: 8px; flex: none; }
+.tbtn { font: 700 15px/1 var(--display); color: #fff; background: rgba(255,255,255,.14);
+        border: 1px solid rgba(255,255,255,.45); border-radius: 999px; padding: 9px 16px;
+        display: inline-flex; align-items: center; gap: 8px; min-height: 40px; }
+.tbtn:hover { background: rgba(255,255,255,.26); }
+.tbtn:focus-visible { outline: 3px solid #fff; outline-offset: 2px; }
+.tbtn svg { width: 18px; height: 18px; }
+.banner-inner { max-width: 1100px; margin: 0 auto; padding: 16px 16px 36px;
+                display: flex; align-items: center; justify-content: center; gap: 32px; }
+.crest { width: 180px; height: 180px; flex: none; }
+.banner-text { display: flex; flex-direction: column; gap: 4px; }
+.kicker { font-size: 24px; font-weight: 900; letter-spacing: 4px; line-height: 1.2; }
+.school { font-size: clamp(2.3rem, 6vw, 3.8rem); font-weight: 900; line-height: 1; margin: 0; color: #fff; }
+.gallery { font-size: clamp(1.25rem, 3vw, 1.8rem); font-weight: 800; margin-top: 6px; line-height: 1.2; }
+.gallery-sub { font-size: 1.05rem; font-weight: 600; color: #EEF6FD; }
+
+/* ---------- Banner (other pages): compact ---------- */
+.compact-inner { max-width: 1100px; margin: 0 auto; padding: 10px 16px;
+                 display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+.compact-brand { display: flex; align-items: center; gap: 12px; color: #fff; text-decoration: none; min-width: 0; }
+.crest-sm { width: 56px; height: 56px; flex: none; }
+.compact-brand > span { display: flex; flex-direction: column; line-height: 1.2; min-width: 0; }
+.compact-school { font-weight: 900; font-size: 1.25rem; }
+.compact-gallery { font-weight: 700; font-size: .95rem; opacity: .9; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+@media (max-width: 560px) {
+  .compact-gallery { display: none; }
+  .compact-school { font-size: 1.05rem; }
+  .crest-sm { width: 44px; height: 44px; }
+  .compact-inner .tbtn { padding: 8px 12px; font-size: 14px; }
+}
+
+/* ---------- Home: description left, photo right ---------- */
+.intro { max-width: 1100px; margin: 56px auto 0; padding: 0 16px;
+         display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 56px; align-items: start; }
+.hero { margin: 0; position: sticky; top: 24px; }
+.hero img { width: 100%; height: auto; border-radius: 6px; background: var(--line); }
+.hero figcaption { font-size: 15px; color: var(--muted); margin-top: 10px; text-align: center; }
+.about { margin: 0; }
+.about p { margin: 0 0 1.2em; }
+.eyebrow { font: 800 14px/1.4 var(--display); letter-spacing: 2px; text-transform: uppercase;
+           color: var(--accent); margin: 0 0 10px; }
+h1 { font: 900 clamp(2.2rem, 5vw, 3.4rem)/1.05 var(--display); margin: 0 0 8px; }
+.meta { color: var(--muted); font-size: 17px; margin: 0 0 32px; padding-bottom: 28px; border-bottom: 1px solid var(--line); }
+.sig { font-weight: 600; margin-top: 28px; }
+.sig span { display: block; font-weight: 400; color: var(--muted); font-size: 16px; }
+@media (max-width: 860px) {
+  .intro { grid-template-columns: 1fr; gap: 32px; margin-top: 24px; }
+  .hero { position: static; order: -1; }
+}
+
+/* ---------- Home: student cards ---------- */
+.students { max-width: 1100px; margin: 72px auto 0; padding: 0 16px; }
+h2 { font: 900 clamp(1.6rem, 4vw, 2.2rem)/1.15 var(--display); margin: 0 0 20px; text-align: center; }
+.student-grid { list-style: none; margin: 0; padding: 0; display: grid; gap: 20px;
+                grid-template-columns: repeat(5, minmax(0, 1fr)); }
+.card { display: block; height: 100%; color: inherit; text-decoration: none; background: var(--surface);
+        border: 1px solid var(--line); border-radius: 8px; overflow: hidden;
+        transition: transform .15s ease, box-shadow .15s ease, border-color .15s ease; }
+.card:hover { transform: translateY(-3px); border-color: var(--accent); box-shadow: 0 6px 18px rgba(0,0,0,.12); }
+.card:focus-visible { outline: 3px solid var(--accent); outline-offset: 3px; }
+.cover { aspect-ratio: 4 / 5; background: var(--line); }
+.cover img { width: 100%; height: 100%; object-fit: cover; }
+.card-name { font: 800 1.15rem/1.2 var(--display); padding: 12px 14px 4px; margin: 0; }
+.card-link { font-size: 15px; font-weight: 600; color: var(--accent); padding: 0 14px 14px; margin: 0; }
+@media (max-width: 960px) { .student-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
+@media (max-width: 560px) { .student-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; } }
+
+/* ---------- Student page ---------- */
+.page { max-width: 1100px; margin: 0 auto; padding: 0 16px; }
+.student-head { margin: 40px auto 32px; max-width: 760px; text-align: center; }
+.student-head h1 { margin-bottom: 20px; }
+.statement { text-align: left; background: var(--surface); border: 1px solid var(--line);
+             border-left: 4px solid var(--accent); border-radius: 6px; padding: 18px 22px; }
+.statement .eyebrow { margin-bottom: 6px; text-align: left; }
+.statement p:last-child { margin: 0; white-space: pre-line; }
+
+/* Justified grid: tile width follows each photo's shape, so nothing is cropped. */
+.photo-grid { list-style: none; padding: 0; margin: 0; display: flex; flex-wrap: wrap; gap: 8px; }
+.photo-grid li { margin: 0; flex-basis: calc(var(--r) * 220px); }
+.grid-filler { flex-grow: 10; }
+.tile { display: block; width: 100%; padding: 0; border: 0; background: var(--line); border-radius: 4px; overflow: hidden; }
+.tile-inner { display: block; position: relative; }
+.tile img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; transition: opacity .15s; }
+.tile:hover img { opacity: .88; }
+@media (max-width: 600px) { .photo-grid { gap: 6px; } .photo-grid li { flex-basis: calc(var(--r) * 110px); } }
+
+.student-nav { display: flex; justify-content: space-between; gap: 12px; margin: 40px 0 0; padding-top: 20px;
+               border-top: 1px solid var(--line); font-family: var(--display); }
+.student-nav a { text-decoration: none; font-weight: 800; }
+
+footer { margin-top: 80px; padding: 28px 16px; text-align: center; color: var(--muted); font-size: 15px;
+         border-top: 1px solid var(--line); }
+footer .dot { color: var(--red); }
+main > .status { max-width: 1100px; margin: 48px auto; padding: 0 16px; }
+
+@media (max-width: 640px) {
+  .banner-inner { flex-direction: column; text-align: center; gap: 18px; padding: 8px 16px 28px; }
+  .crest { width: 140px; height: 140px; }
+  .kicker { font-size: 19px; letter-spacing: 3px; }
+  body { font-size: 17px; }
+}
+
+/* ---------- Lightbox ---------- */
+.lightbox {
+  position: fixed; inset: 0; z-index: 100;
+  background: rgba(8, 8, 8, .96); color: #f2f2f0;
+  display: grid; grid-template-columns: 56px 1fr 56px; grid-template-rows: auto 1fr;
+  touch-action: pan-y;
+}
+.lb-top { grid-column: 1 / -1; display: flex; justify-content: space-between; align-items: center; padding: 10px 12px; }
+.lb-count { font-variant-numeric: tabular-nums; opacity: .8; padding-left: 4px; }
+.lb-top-actions { display: flex; gap: 6px; }
+.lb-btn, .lb-arrow { background: transparent; color: inherit; border: 0; border-radius: 999px; }
+.lb-btn { width: 44px; height: 44px; font-size: 1.05rem; }
+.lb-btn:hover, .lb-arrow:hover { background: rgba(255,255,255,.12); }
+.lb-arrow { align-self: center; height: 64px; font-size: 2.6rem; line-height: 1; }
+.lb-figure { margin: 0; min-height: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 0 0 16px; }
+.lb-figure img { max-width: 100%; max-height: calc(100vh - 140px); max-height: calc(100dvh - 140px); object-fit: contain; }
+.lb-figure figcaption { text-align: center; padding-top: 10px; max-width: 720px; display: flex; flex-direction: column; gap: 2px; }
+.lb-figure figcaption span { opacity: .8; }
+@media (max-width: 600px) {
+  .lightbox { grid-template-columns: 1fr; }
+  .lb-arrow { position: absolute; top: 50%; transform: translateY(-50%); background: rgba(0,0,0,.35); width: 44px; height: 56px; font-size: 2rem; }
+  .lb-prev { left: 4px; } .lb-next { right: 4px; }
+}
