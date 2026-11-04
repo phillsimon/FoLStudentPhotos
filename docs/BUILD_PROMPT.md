@@ -6,14 +6,14 @@ Build a bilingual online photo gallery that displays in English or Spanish based
 
 The site must run entirely on the **Cloudflare free tier**.
 
-Deploy first to the free `workers.dev` address (Worker name: `fol-gallery`). A custom domain will be added later, so nothing in the code may hard-code the hostname; build all URLs relative to the request.
+Deploy first to the free `workers.dev` address (Worker name: `folstudentphotos`). A custom domain will be added later, so nothing in the code may hard-code the hostname; build all URLs relative to the request.
 
 ## Tech stack
 
-- **Hosting/runtime:** Cloudflare Workers with static assets (single Worker serving the frontend and the API). Configure with `wrangler.toml`.
+- **Hosting/runtime:** Cloudflare Workers with static assets (single Worker serving the frontend and the API). Configure with `wrangler.jsonc`.
 - **Frontend:** React + Vite + TypeScript. Plain CSS with custom properties for theming (no heavy UI framework).
 - **API:** Hono running in the Worker.
-- **Database:** Cloudflare D1 (SQLite). Include migration files.
+- **Database:** Cloudflare D1 (SQLite). Migrations live in `worker/schema.js`, and the Worker applies them itself on first use.
 - **File storage:** Cloudflare R2, one private bucket. Nothing in the bucket is publicly listable.
 - **Translation:** Workers AI, `@cf/meta/m2m100-1.2b` (English ↔ Spanish, both directions).
 - **Auth:** Built in-house. Passwords hashed with PBKDF2 via WebCrypto. Sessions stored in D1, sent as HttpOnly, Secure, SameSite=Lax cookies. No third-party auth service.
@@ -164,7 +164,7 @@ The whole site (interface labels, artist statements, workshop description, messa
 - Display first names only. Never display student emails anywhere public.
 - Strip GPS location data from the `web` and `thumb` variants (canvas re-encoding does this automatically; confirm no EXIF is carried over to public variants).
 - Add `<meta name="robots" content="noindex">` as a setting I can toggle, defaulting to on.
-- Student registration always requires my approval.
+- There is no public registration. Only I can issue student logins.
 
 ## Accessibility and performance
 
@@ -177,8 +177,8 @@ The whole site (interface labels, artist statements, workshop description, messa
 ## Deliverables
 
 1. Complete source code in a Git repository structure.
-2. `wrangler.toml` with D1, R2 and Workers AI bindings.
-3. D1 migration files.
+2. `wrangler.jsonc` with D1, R2 and Workers AI bindings.
+3. D1 migrations in `worker/schema.js`.
 4. A `README.md` with step-by-step setup: creating the R2 bucket and D1 database, setting secrets, running locally with `wrangler dev`, deploying with `wrangler deploy`, and connecting a custom domain.
 5. A short section in the README documenting the Lightroom Classic export preset settings.
 
