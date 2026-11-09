@@ -5,8 +5,8 @@ import EditDialog from "./EditDialog.jsx";
 import Uploader from "./Uploader.jsx";
 import { useColumns, splitColumns } from "../columns.js";
 
-// 3 columns, 2 on phones.
-const chooserCols = (w) => (w <= 600 ? 2 : 3);
+// Same as the gallery: 3 columns on wide screens, 2 on tablets, 1 on phones.
+const chooserCols = (w) => (w >= 900 ? 3 : w >= 520 ? 2 : 1);
 
 // One pop-up for choosing which uploaded photos show on a student's page, and their homepage card photo.
 // Students: ticks go to Phillip for review. Phillip: ticks publish now, and he can upload and delete here.
