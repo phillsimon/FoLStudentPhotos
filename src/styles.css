@@ -241,7 +241,7 @@ main > .status { max-width: 1100px; margin: 48px auto; padding: 0 16px; }
 .up-error .up-state { color: var(--red); }
 .pm-count { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; margin: 8px 0; font-weight: 700; }
 .pm-count .status-chip { margin: 0; }
-.pm-grid { list-style: none; display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 10px; margin: 0 0 12px; padding: 0; }
+.pm-grid { list-style: none; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; margin: 0 0 12px; padding: 0; }
 .pm-tile { position: relative; }
 .pm-pick { display: block; width: 100%; padding: 0; aspect-ratio: 1; border: 3px solid transparent; border-radius: 10px; overflow: hidden; background: var(--line); cursor: pointer; }
 .pm-pick img { width: 100%; height: 100%; object-fit: cover; display: block; opacity: .55; transition: opacity .15s; }
@@ -272,14 +272,7 @@ main > .status { max-width: 1100px; margin: 48px auto; padding: 0 16px; }
 .row-actions { display: flex; gap: 8px; margin-left: auto; }
 .storage { margin-top: 18px; }
 @media (max-width: 600px) {
-  .pm-grid { gap: 6px; }
-  /* Four columns on a phone make small tiles; shrink the controls on them. */
-  .pm-check { top: 5px; left: 5px; width: 22px; height: 22px; font-size: 13px; }
-  .pm-star, .pm-delete, .pm-zoom { top: 3px; width: 32px; height: 32px; padding: 6px; font-size: 18px; }
-  .pm-star, .pm-zoom { right: 3px; }
-  .pm-star svg { width: 18px; height: 18px; }
-  .pm-delete { right: 3px; top: auto; bottom: 24px; }
-  .pm-badge { left: 3px; right: 3px; bottom: 3px; padding: 1px 4px; font-size: 10px; }
+  .pm-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
   .review-bar .btn { flex: 1 1 auto; }
   .review-bar .btn:first-of-type { margin-left: 0; }
 }
