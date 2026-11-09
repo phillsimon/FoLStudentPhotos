@@ -3,6 +3,10 @@ import { usePrefs, imgUrl } from "../prefs.jsx";
 import { api } from "../auth.jsx";
 import EditDialog from "./EditDialog.jsx";
 import Uploader from "./Uploader.jsx";
+import { useColumns, splitColumns } from "../columns.js";
+
+// 3 columns, 2 on phones.
+const chooserCols = (w) => (w <= 600 ? 2 : 3);
 
 // One pop-up for choosing which uploaded photos show on a student's page, and their homepage card photo.
 // Students: ticks go to Phillip for review. Phillip: ticks publish now, and he can upload and delete here.
@@ -18,6 +22,7 @@ function Star({ filled }) {
 export default function PhotoManager({ student, admin, onClose, onSaved }) {
   const { t } = usePrefs();
   const library = student.library;
+  const cols = useColumns(chooserCols);
   const { approved, requested } = student.cover;
   // Only what the person changes is kept here, so new uploads appear without losing their ticks.
   const [changes, setChanges] = useState({});
@@ -92,14 +97,16 @@ export default function PhotoManager({ student, admin, onClose, onSaved }) {
             {t("pm_chosen", { n: chosen, total: library.length })}
             {coverWaiting && <span className="status-chip">{t("pm_coverWaiting")}</span>}
           </p>
-          <ul className="pm-grid">
-            {library.map((p) => {
+          <div className="pm-masonry" style={{ "--cols": cols }}>
+            {splitColumns(library, cols).map((col, ci) => (
+              <ul key={ci} className="pm-col">
+            {col.map((p) => {
               const on = shown(p);
               const b = badge(p);
               const isCover = cover === p.id;
               return (
                 <li key={p.id} className={`pm-tile${on ? " on" : ""}`}>
-                  <button type="button" className="pm-pick" aria-pressed={on} onClick={() => toggle(p)}
+                  <button type="button" className="pm-pick" style={{ aspectRatio: `${p.width} / ${p.height}` }} aria-pressed={on} onClick={() => toggle(p)}
                     aria-label={`${p.title || p.filename}: ${t(on ? "pm_shown" : "pm_hidden")}`}>
                     <img src={imgUrl(p)} alt="" loading="lazy" />
                     <span className="pm-check" aria-hidden="true">{on ? "✓" : ""}</span>
@@ -115,7 +122,9 @@ export default function PhotoManager({ student, admin, onClose, onSaved }) {
                 </li>
               );
             })}
-          </ul>
+              </ul>
+            ))}
+          </div>
         </>
       )}
 

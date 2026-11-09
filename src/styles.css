@@ -243,6 +243,9 @@ main > .status { max-width: 1100px; margin: 48px auto; padding: 0 16px; }
 .pm-count .status-chip { margin: 0; }
 .pm-grid { list-style: none; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; margin: 0 0 12px; padding: 0; }
 .pm-tile { position: relative; }
+/* Chooser: masonry columns so each tile matches its photo's shape. */
+.pm-masonry { display: grid; grid-template-columns: repeat(var(--cols, 3), minmax(0, 1fr)); gap: 12px; align-items: start; margin: 0 0 12px; }
+.pm-col { list-style: none; margin: 0; padding: 0; display: grid; gap: 12px; }
 .pm-pick { display: block; width: 100%; padding: 0; aspect-ratio: 1; border: 3px solid transparent; border-radius: 10px; overflow: hidden; background: var(--line); cursor: pointer; }
 .pm-pick img { width: 100%; height: 100%; object-fit: cover; display: block; opacity: .55; transition: opacity .15s; }
 .pm-tile.on .pm-pick { border-color: var(--accent); }
@@ -255,7 +258,7 @@ main > .status { max-width: 1100px; margin: 48px auto; padding: 0 16px; }
 .pm-star { right: 6px; }
 .pm-star svg { width: 22px; height: 22px; }
 .pm-star.on { color: #ffc93c; background: rgba(0,0,0,.6); }
-.pm-delete { right: 6px; top: auto; bottom: 30px; font-size: 24px; }
+.pm-delete { right: 52px; font-size: 24px; }
 .pm-zoom { right: 6px; }
 .pm-badge { position: absolute; left: 6px; right: 6px; bottom: 6px; padding: 2px 8px; border-radius: 999px; text-align: center;
   font: 800 12px/1.6 var(--display); color: #fff; background: rgba(0,0,0,.6); pointer-events: none; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
@@ -273,6 +276,7 @@ main > .status { max-width: 1100px; margin: 48px auto; padding: 0 16px; }
 .storage { margin-top: 18px; }
 @media (max-width: 600px) {
   .pm-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
+  .pm-masonry, .pm-col { gap: 8px; }
   .review-bar .btn { flex: 1 1 auto; }
   .review-bar .btn:first-of-type { margin-left: 0; }
 }

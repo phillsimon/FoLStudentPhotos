@@ -1,4 +1,5 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
+import { useColumns, splitColumns } from "../columns.js";
 import { Link, useLocation, useNavigate, useParams, useSearchParams } from "react-router-dom";
 import { usePrefs, useJson, imgUrl, studentPath } from "../prefs.jsx";
 import { useAuth } from "../auth.jsx";
@@ -9,32 +10,10 @@ import { AdminStatementEditor, PhotoEditor, StudentStatementEditor } from "../co
 import PhotoManager from "../components/PhotoManager.jsx";
 
 // 3 columns on wide screens, 2 on tablets, 1 on phones.
-const colsFor = (w) => (w >= 900 ? 3 : w >= 520 ? 2 : 1);
-
-function useColumns() {
-  const [cols, setCols] = useState(() => colsFor(window.innerWidth));
-  useEffect(() => {
-    const onResize = () => setCols(colsFor(window.innerWidth));
-    window.addEventListener("resize", onResize);
-    return () => window.removeEventListener("resize", onResize);
-  }, []);
-  return cols;
-}
-
-// Each photo goes into the currently shortest column, measured by height relative to width.
-function splitColumns(photos, n) {
-  const cols = Array.from({ length: n }, () => []);
-  const heights = new Array(n).fill(0);
-  for (const p of photos) {
-    const i = heights.indexOf(Math.min(...heights));
-    cols[i].push(p);
-    heights[i] += p.height / p.width + 0.02; // The small extra accounts for the gap.
-  }
-  return cols;
-}
+const galleryCols = (w) => (w >= 900 ? 3 : w >= 520 ? 2 : 1);
 
 export default function StudentPage() {
-  const cols = useColumns();
+  const cols = useColumns(galleryCols);
   const { slug } = useParams();
   const { t, pick } = usePrefs();
   const { data: s, error, reload } = useJson(`/api/students/${slug}`);
