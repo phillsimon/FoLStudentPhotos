@@ -107,14 +107,14 @@ h2 { font: 900 clamp(1.6rem, 4vw, 2.2rem)/1.15 var(--display); margin: 0 0 20px;
 .statement > p:last-child, .statement .pending p:last-child { margin-bottom: 0; }
 
 /* Justified grid: tile width follows each photo's shape, so nothing is cropped. */
-.photo-grid { list-style: none; padding: 0; margin: 0; display: flex; flex-wrap: wrap; gap: 8px; }
-.photo-grid li { margin: 0; flex-basis: calc(var(--r) * 220px); }
-.grid-filler { flex-grow: 10; }
+.photo-grid { display: grid; grid-template-columns: repeat(var(--cols, 3), minmax(0, 1fr)); gap: 10px; align-items: start; }
+.photo-col { list-style: none; margin: 0; padding: 0; display: grid; gap: 10px; }
+.photo-col li { margin: 0; }
 .tile { display: block; width: 100%; padding: 0; border: 0; background: var(--line); border-radius: 4px; overflow: hidden; }
 .tile-inner { display: block; position: relative; }
 .tile img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; transition: opacity .15s; }
 .tile:hover img { opacity: .88; }
-@media (max-width: 600px) { .photo-grid { gap: 6px; } .photo-grid li { flex-basis: calc(var(--r) * 110px); } }
+@media (max-width: 600px) { .photo-grid, .photo-col { gap: 8px; } }
 
 .student-nav { display: flex; justify-content: space-between; gap: 12px; margin: 40px 0 0; padding-top: 20px;
                border-top: 1px solid var(--line); font-family: var(--display); }

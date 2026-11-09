@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Link, useLocation, useNavigate, useParams, useSearchParams } from "react-router-dom";
 import { usePrefs, useJson, imgUrl, studentPath } from "../prefs.jsx";
 import { useAuth } from "../auth.jsx";
@@ -8,7 +8,33 @@ import Pencil from "../components/Pencil.jsx";
 import { AdminStatementEditor, PhotoEditor, StudentStatementEditor } from "../components/Editors.jsx";
 import PhotoManager from "../components/PhotoManager.jsx";
 
+// 3 columns on wide screens, 2 on tablets, 1 on phones.
+const colsFor = (w) => (w >= 900 ? 3 : w >= 520 ? 2 : 1);
+
+function useColumns() {
+  const [cols, setCols] = useState(() => colsFor(window.innerWidth));
+  useEffect(() => {
+    const onResize = () => setCols(colsFor(window.innerWidth));
+    window.addEventListener("resize", onResize);
+    return () => window.removeEventListener("resize", onResize);
+  }, []);
+  return cols;
+}
+
+// Each photo goes into the currently shortest column, measured by height relative to width.
+function splitColumns(photos, n) {
+  const cols = Array.from({ length: n }, () => []);
+  const heights = new Array(n).fill(0);
+  for (const p of photos) {
+    const i = heights.indexOf(Math.min(...heights));
+    cols[i].push(p);
+    heights[i] += p.height / p.width + 0.02; // The small extra accounts for the gap.
+  }
+  return cols;
+}
+
 export default function StudentPage() {
+  const cols = useColumns();
   const { slug } = useParams();
   const { t, pick } = usePrefs();
   const { data: s, error, reload } = useJson(`/api/students/${slug}`);
@@ -36,6 +62,7 @@ export default function StudentPage() {
   const shown = isOwner ? s.statement_es : pick(s, "statement");
   const pendingView = canEdit && s.edit.draft && s.edit.status !== "approved";
   const editingIndex = s.photos.findIndex((p) => p.id === editing);
+  const columns = splitColumns(s.photos, cols);
   const isAdmin = user?.role === "superadmin";
   const library = s.library || [];
   const waiting = library.filter((p) => p.status === "requested").length;
@@ -78,27 +105,28 @@ export default function StudentPage() {
         </div>
       )}
 
-      {/* Justified grid: each tile's width follows its aspect ratio, so nothing is cropped. */}
-      <ul className="photo-grid">
-        {s.photos.map((p) => {
-          const ratio = p.width / p.height;
-          return (
-            <li key={p.id} className="photo-item" style={{ flexGrow: ratio, "--r": ratio }}>
-              <button className="tile" onClick={() => open(p.id)}>
-                <span className="tile-inner" style={{ paddingBottom: `${100 / ratio}%` }}>
-                  <img
-                    src={imgUrl(p)}
-                    alt={p.title || p.caption || t("photoBy", { name: s.first_name })}
-                    loading="lazy"
-                  />
-                </span>
-              </button>
-              {canEdit && <Pencil className="pencil-photo" label={t("editPhoto")} onClick={() => setEditing(p.id)} />}
-            </li>
-          );
-        })}
-        <li className="grid-filler" aria-hidden="true" />
-      </ul>
+      {/* Masonry: three columns on wide screens, fewer on narrow ones. Each photo keeps its shape (no cropping),
+          and goes into the shortest column so the order still reads left to right, top to bottom. */}
+      <div className="photo-grid" style={{ "--cols": cols }}>
+        {columns.map((col, ci) => (
+          <ul key={ci} className="photo-col">
+            {col.map((p) => (
+              <li key={p.id} className="photo-item">
+                <button className="tile" onClick={() => open(p.id)}>
+                  <span className="tile-inner" style={{ paddingBottom: `${(100 * p.height) / p.width}%` }}>
+                    <img
+                      src={imgUrl(p)}
+                      alt={p.title || p.caption || t("photoBy", { name: s.first_name })}
+                      loading="lazy"
+                    />
+                  </span>
+                </button>
+                {canEdit && <Pencil className="pencil-photo" label={t("editPhoto")} onClick={() => setEditing(p.id)} />}
+              </li>
+            ))}
+          </ul>
+        ))}
+      </div>
 
       <nav className="student-nav">
         <Link to={studentPath(s.prev.slug)}>← {s.prev.first_name}</Link>
