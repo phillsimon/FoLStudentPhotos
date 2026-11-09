@@ -357,6 +357,10 @@ async function api(request, env, url) {
   }
   if (path === "/api/translate" && method === "POST") return translateText(request, env);
   if (path === "/api/admin/overview" && method === "GET") return adminOverview(request, env);
+  if (path === "/api/admin/test-email" && method === "POST") {
+    await requireAdmin(env, request);
+    return Response.json(await notify(env, request, "Test email", ["This is a test from the gallery's admin page. Email notices are working."]));
+  }
 
   let m = path.match(/^\/api\/admin\/users\/(\d+)\/temp-password$/);
   if (m && method === "POST") return issueTempPassword(request, env, Number(m[1]));

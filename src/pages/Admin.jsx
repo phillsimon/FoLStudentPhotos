@@ -166,6 +166,26 @@ function CoverReview({ covers, onDone }) {
   );
 }
 
+// Sends a test email and says what happened, so a missing or wrong key is easy to spot.
+function TestEmail() {
+  const { t } = usePrefs();
+  const [state, setState] = useState(null);
+  const run = async () => {
+    setState({ busy: true });
+    try {
+      setState(await api("/api/admin/test-email", "POST", {}));
+    } catch {
+      setState({ ok: false, reason: "server" });
+    }
+  };
+  return (
+    <p className="dialog-hint test-email">
+      <button type="button" className="btn small" onClick={run} disabled={state?.busy}>{t("sendTestEmail")}</button>{" "}
+      {state && !state.busy && (state.ok ? t("testEmailSent", { to: state.to }) : `${t(`testEmail_${state.reason}`)}${state.detail ? ` (${state.status ?? ""} ${state.detail})` : ""}`)}
+    </p>
+  );
+}
+
 const gb = (n) => (n / 1024 ** 3).toFixed(2);
 
 export default function Admin() {
@@ -218,6 +238,7 @@ export default function Admin() {
       </ul>
 
       <p className="dialog-hint storage">{t("storageUsed", { used: gb(data.storage_bytes) })}</p>
+      <TestEmail />
 
       <h2>{t("recentCaptionEdits")}</h2>
       {data.photo_edits.length === 0 ? (

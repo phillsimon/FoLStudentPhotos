@@ -8,9 +8,15 @@
 const DEFAULT_FROM = "Fountain of Life Gallery <onboarding@resend.dev>";
 
 export async function notify(env, request, subject, lines, path = "/admin") {
-  if (!env.RESEND_API_KEY) return;
+  const result = await send(env, request, subject, lines, path);
+  if (!result.ok) console.error("notify failed", result.reason, result.status ?? "", result.detail ?? "");
+  return result;
+}
+
+async function send(env, request, subject, lines, path) {
+  if (!env.RESEND_API_KEY) return { ok: false, reason: "no_key" };
   const to = env.NOTIFY_TO || env.ADMIN_EMAIL;
-  if (!to) return;
+  if (!to) return { ok: false, reason: "no_recipient" };
   const link = new URL(path, request.url).toString();
   const text = [...lines.filter(Boolean), "", link].join("\n");
   try {
@@ -20,8 +26,9 @@ export async function notify(env, request, subject, lines, path = "/admin") {
       body: JSON.stringify({ from: env.NOTIFY_FROM || DEFAULT_FROM, to: [to], subject: `Gallery: ${subject}`, text }),
       signal: AbortSignal.timeout(5000),
     });
-    if (!r.ok) console.error("notify failed", r.status, await r.text());
+    if (!r.ok) return { ok: false, reason: "rejected", status: r.status, detail: (await r.text()).slice(0, 300), to };
+    return { ok: true, to };
   } catch (e) {
-    console.error("notify failed", e);
+    return { ok: false, reason: "network", detail: String(e).slice(0, 300), to };
   }
 }

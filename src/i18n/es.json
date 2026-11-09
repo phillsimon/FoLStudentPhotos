@@ -148,5 +148,12 @@
   "err_storage_missing": "El almacenamiento de fotos todavía no está conectado.",
   "err_cover_not_shown": "La foto de la tarjeta tiene que ser una de las fotos elegidas.",
   "err_not_available": "Esa foto ya no está disponible.",
-  "err_too_many": "Puedes elegir hasta 25 fotos. Quita una para elegir otra."
+  "err_too_many": "Puedes elegir hasta 25 fotos. Quita una para elegir otra.",
+  "sendTestEmail": "Enviar correo de prueba",
+  "testEmailSent": "Enviado a {to}. Revisa la bandeja de entrada y el spam.",
+  "testEmail_no_key": "No se envió: el Worker no tiene el secreto RESEND_API_KEY.",
+  "testEmail_no_recipient": "No se envió: falta ADMIN_EMAIL.",
+  "testEmail_rejected": "Resend lo rechazó:",
+  "testEmail_network": "No se pudo conectar con Resend:",
+  "testEmail_server": "Hubo un error en el servidor."
 }
