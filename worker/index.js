@@ -359,7 +359,10 @@ async function api(request, env, url) {
   if (path === "/api/admin/overview" && method === "GET") return adminOverview(request, env);
   if (path === "/api/admin/test-email" && method === "POST") {
     await requireAdmin(env, request);
-    return Response.json(await notify(env, request, "Test email", ["This is a test from the gallery's admin page. Email notices are working."]));
+    const result = await notify(env, request, "Test email", ["This is a test from the gallery's admin page. Email notices are working."]);
+    // Names only, never values: shows whether the key reached the Worker under the right name.
+    if (result.reason === "no_key") result.detail = `settings the Worker sees: ${Object.keys(env).filter((k) => typeof env[k] === "string").map((k) => JSON.stringify(k)).join(", ")}`;
+    return Response.json(result);
   }
 
   let m = path.match(/^\/api\/admin\/users\/(\d+)\/temp-password$/);
