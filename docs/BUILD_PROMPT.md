@@ -104,6 +104,11 @@ Seed the super admin account from Worker secrets (`ADMIN_EMAIL`, `ADMIN_PASSWORD
 - I can tick, untick and star photos myself in the same pop-up on any student page, and my changes publish immediately.
 - Until a student has at least one approved photo, their page and card keep showing the placeholder images.
 
+### Email notices to me
+- Email phillip@insightful.media when a student changes their password (including choosing one after a temporary password), chooses photos (new picks, photos taken down, a new card photo pick), or submits an artist statement (the email includes the text).
+- My own actions don't send email. A failed email never blocks the student's action.
+- Sent with Resend's free plan through its API (`RESEND_API_KEY` secret); no emails until the key is set. See the README.
+
 ### Editing: pencils and pop-ups
 - When signed in, a **pencil icon** appears next to anything the person may edit. Clicking it opens a pop-up with that content. Visitors never see pencils. There is no separate "My photos" page.
 - **Line breaks in any editor become paragraph breaks** on the site.

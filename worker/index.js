@@ -2,6 +2,7 @@ import { students, site, findPhoto } from "./data.js";
 import { HttpError, readJson, isAdmin, canEditStudent, requireUser, requireAdmin } from "./http.js";
 import { ensureDb } from "./schema.js";
 import { translate } from "./translate.js";
+import { notify } from "./notify.js";
 import {
   toClient, photosFor, getPhoto, uploadPhoto, deletePhoto, serveImage, saveSelection, reviewPhotos, reviewCover, reviewQueue,
 } from "./photos.js";
@@ -106,6 +107,14 @@ async function changePassword(request, env) {
   // Sign out everywhere else, then keep this device signed in.
   await dropUserSessions(env, user.id);
   const cookie = await createSession(env, request, user.id);
+  if (user.role === "student") {
+    const first = user.must_change;
+    await notify(env, request, `${user.display_name} ${first ? "signed in and chose a password" : "changed their password"}`, [
+      first
+        ? `${user.display_name} signed in with the temporary password and chose their own password.`
+        : `${user.display_name} changed their password.`,
+    ]);
+  }
   return Response.json({ user: publicUser({ ...user, must_change: 0 }) }, { headers: { "Set-Cookie": cookie } });
 }
 
@@ -198,6 +207,12 @@ async function saveStatement(request, env, slug) {
     await env.DB.prepare(
       `UPDATE students SET draft = ?, review_note = '', status = 'submitted', submitted_at = ?, updated_at = ? WHERE slug = ?`
     ).bind(text, now, now, slug).run();
+    const name = students.find((x) => x.slug === slug).first_name;
+    await notify(env, request, `${name} submitted an artist statement`, [
+      `${name} submitted an artist statement for your review:`,
+      "",
+      text,
+    ], `/estudiantes/${slug}`);
   }
   return Response.json({ ok: true });
 }

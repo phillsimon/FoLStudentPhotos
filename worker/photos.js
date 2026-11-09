@@ -7,6 +7,7 @@
 
 import { students } from "./data.js";
 import { HttpError, readJson, isAdmin, canEditStudent, requireUser, requireAdmin } from "./http.js";
+import { notify } from "./notify.js";
 
 // Most photos a student's page can show, counting ones waiting for review.
 export const MAX_SHOWN = 25;
@@ -160,6 +161,8 @@ export async function saveSelection(request, env, slug) {
     stmts.push(env.DB.prepare(`UPDATE photos SET status = ?${extra} WHERE id = ?`).bind(status, ...(extra ? [now] : []), p.id));
 
   const liveAfter = new Set();
+  let added = 0; // For the email to Phillip: a student's new picks and photos taken down.
+  let removed = 0;
   for (const p of all) {
     const wanted = show.has(p.id);
     if (admin) {
@@ -169,8 +172,13 @@ export async function saveSelection(request, env, slug) {
       if (wanted) liveAfter.add(p.id);
     } else {
       // A student's pick waits for review. Taking a photo down needs no review.
-      if (wanted && (p.status === "private" || p.status === "declined")) setStatus(p, "requested", ", requested_at = ?");
-      else if (!wanted && (p.status === "requested" || p.status === "live")) setStatus(p, "private");
+      if (wanted && (p.status === "private" || p.status === "declined")) {
+        setStatus(p, "requested", ", requested_at = ?");
+        added += 1;
+      } else if (!wanted && (p.status === "requested" || p.status === "live")) {
+        setStatus(p, "private");
+        removed += 1;
+      }
       if (wanted && p.status === "live") liveAfter.add(p.id);
     }
   }
@@ -194,6 +202,17 @@ export async function saveSelection(request, env, slug) {
       .bind(coverId, coverRequest, coverRequest ? (keepAt ? student.cover_requested_at ?? now : now) : null, slug)
   );
   await env.DB.batch(stmts);
+
+  const newCover = !admin && coverRequest && coverRequest !== student?.cover_requested_id;
+  if (!admin && (added || removed || newCover)) {
+    const name = students.find((s) => s.slug === slug)?.first_name ?? slug;
+    await notify(env, request, `${name} chose photos`, [
+      added && `${added} new ${added === 1 ? "photo" : "photos"} waiting for your review.`,
+      removed && `${removed} ${removed === 1 ? "photo" : "photos"} taken down or withdrawn.`,
+      newCover && "Picked a new card photo for the home page, waiting for your review.",
+      `${name} now has ${all.filter((p) => show.has(p.id)).length} of ${MAX_SHOWN} photos chosen.`,
+    ]);
+  }
   return Response.json({ ok: true });
 }
 
