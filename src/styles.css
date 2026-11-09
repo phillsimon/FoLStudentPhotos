@@ -273,6 +273,13 @@ main > .status { max-width: 1100px; margin: 48px auto; padding: 0 16px; }
 .storage { margin-top: 18px; }
 @media (max-width: 600px) {
   .pm-grid { gap: 6px; }
+  /* Four columns on a phone make small tiles; shrink the controls on them. */
+  .pm-check { top: 5px; left: 5px; width: 22px; height: 22px; font-size: 13px; }
+  .pm-star, .pm-delete, .pm-zoom { top: 3px; width: 32px; height: 32px; padding: 6px; font-size: 18px; }
+  .pm-star, .pm-zoom { right: 3px; }
+  .pm-star svg { width: 18px; height: 18px; }
+  .pm-delete { right: 3px; top: auto; bottom: 24px; }
+  .pm-badge { left: 3px; right: 3px; bottom: 3px; padding: 1px 4px; font-size: 10px; }
   .review-bar .btn { flex: 1 1 auto; }
   .review-bar .btn:first-of-type { margin-left: 0; }
 }
