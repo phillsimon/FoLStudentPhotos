@@ -98,7 +98,7 @@ Seed the super admin account from Worker secrets (`ADMIN_EMAIL`, `ADMIN_PASSWORD
 
 ### Choosing which photos go public
 - I upload all of a student's photos. They start private: only the student and I can see them.
-- The student opens "Elegir mis fotos" on their page and ticks the photos they want shown, and taps a star to pick the photo for their card on the homepage. Ticks are sent to me for review; nothing a student picks is public before I approve it. A student can take a photo down at any time without review.
+- The student opens "Elegir mis fotos" on their page and ticks the photos they want shown (no more than 25, counting ones waiting for review; the same limit applies to me), and taps a star to pick the photo for their card on the homepage. Ticks are sent to me for review; nothing a student picks is public before I approve it. A student can take a photo down at any time without review.
 - In `/admin`, "Photos to review" lists every picked photo grouped by student with a checkbox on each. I tick one or many (or a whole student, or select all) and approve or decline them together. Declined photos show "Not approved" to the student, who can pick them again.
 - The student's card photo pick also waits for my approval ("Card photos to review"). Approving it also approves that photo if it's still waiting.
 - I can tick, untick and star photos myself in the same pop-up on any student page, and my changes publish immediately.

@@ -6,6 +6,7 @@ import Uploader from "./Uploader.jsx";
 import { useColumns, splitColumns } from "../columns.js";
 
 // Same as the gallery: 3 columns on wide screens, 2 on tablets, 1 on phones.
+const MAX_SHOWN = 25; // Matches the server limit in worker/photos.js.
 const chooserCols = (w) => (w >= 900 ? 3 : w >= 520 ? 2 : 1);
 
 // One pop-up for choosing which uploaded photos show on a student's page, and their homepage card photo.
@@ -35,12 +36,25 @@ export default function PhotoManager({ student, admin, onClose, onSaved }) {
   const startCover = admin ? approved : requested || approved;
   const cover = coverPick === undefined ? startCover : coverPick;
 
+  // Phillip's save keeps a student's waiting picks, so they count toward the limit for him too.
+  const taken = library.filter(shown).length + (admin ? library.filter((p) => p.status === "requested" && !shown(p)).length : 0);
+  const full = taken >= MAX_SHOWN;
+
   const toggle = (p) => {
     const next = !shown(p);
+    if (next && full) {
+      setError(t("err_too_many"));
+      return;
+    }
+    setError("");
     setChanges((c) => ({ ...c, [p.id]: next }));
     if (!next && cover === p.id) setCoverPick(null);
   };
   const pickCover = (p) => {
+    if (!shown(p) && full) {
+      setError(t("err_too_many"));
+      return;
+    }
     if (!shown(p)) setChanges((c) => ({ ...c, [p.id]: true }));
     setCoverPick(p.id);
   };
@@ -81,7 +95,6 @@ export default function PhotoManager({ student, admin, onClose, onSaved }) {
     return null;
   };
 
-  const chosen = library.filter(shown).length;
   const coverWaiting = !admin && requested && cover === requested;
 
   return (
@@ -94,8 +107,9 @@ export default function PhotoManager({ student, admin, onClose, onSaved }) {
         <>
           <p className="dialog-hint">{t(admin ? "pm_hintAdmin" : "pm_hint")}</p>
           <p className="pm-count" aria-live="polite">
-            {t("pm_chosen", { n: chosen, total: library.length })}
+            <span className={full ? "pm-full" : undefined}>{t("pm_chosen", { n: taken, max: MAX_SHOWN, total: library.length })}</span>
             {coverWaiting && <span className="status-chip">{t("pm_coverWaiting")}</span>}
+            {error && <span className="form-error" role="alert">{error}</span>}
           </p>
           <div className="pm-masonry" style={{ "--cols": cols }}>
             {splitColumns(library, cols).map((col, ci) => (
@@ -128,7 +142,7 @@ export default function PhotoManager({ student, admin, onClose, onSaved }) {
         </>
       )}
 
-      {error && <p className="form-error" role="alert">{error}</p>}
+      {error && library.length === 0 && <p className="form-error" role="alert">{error}</p>}
       <div className="dialog-actions">
         <button type="button" className="btn" onClick={onClose} disabled={busy}>{t(library.length ? "cancel" : "close")}</button>
         {library.length > 0 && (

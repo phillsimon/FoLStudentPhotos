@@ -97,11 +97,11 @@
   "pm_openAdmin": "Subir y elegir fotos",
   "pm_title": "Elegir mis fotos",
   "pm_titleAdmin": "Fotos: {name}",
-  "pm_hint": "Toca las fotos que quieres en tu página. Phillip las revisa antes de que aparezcan. Toca la estrella para elegir la foto de tu tarjeta en la página principal.",
+  "pm_hint": "Toca las fotos que quieres en tu página. Puedes elegir hasta 25. Phillip las revisa antes de que aparezcan. Toca la estrella para elegir la foto de tu tarjeta en la página principal.",
   "pm_hintAdmin": "Las fotos marcadas están en la página. Tus cambios se publican de inmediato. La estrella elige la foto de la tarjeta en la página principal.",
   "pm_empty": "Phillip todavía no ha subido tus fotos.",
   "pm_emptyAdmin": "Todavía no hay fotos subidas.",
-  "pm_chosen": "{n} de {total} elegidas",
+  "pm_chosen": "{n} de {max} elegidas · {total} fotos",
   "pm_shown": "elegida",
   "pm_hidden": "no elegida",
   "pm_cover": "Foto de la tarjeta en la página principal",
@@ -147,5 +147,6 @@
   "err_bad_type": "No es una imagen compatible",
   "err_storage_missing": "El almacenamiento de fotos todavía no está conectado.",
   "err_cover_not_shown": "La foto de la tarjeta tiene que ser una de las fotos elegidas.",
-  "err_not_available": "Esa foto ya no está disponible."
+  "err_not_available": "Esa foto ya no está disponible.",
+  "err_too_many": "Puedes elegir hasta 25 fotos. Quita una para elegir otra."
 }

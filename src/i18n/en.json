@@ -97,11 +97,11 @@
   "pm_openAdmin": "Upload and choose photos",
   "pm_title": "Choose my photos",
   "pm_titleAdmin": "Photos: {name}",
-  "pm_hint": "Tap the photos you want on your page. Phillip reviews them before they appear. Tap the star to choose the photo for your card on the home page.",
+  "pm_hint": "Tap the photos you want on your page. You can choose up to 25. Phillip reviews them before they appear. Tap the star to choose the photo for your card on the home page.",
   "pm_hintAdmin": "Ticked photos are on the page. Your changes publish right away. The star sets the home page card photo.",
   "pm_empty": "Phillip hasn't uploaded your photos yet.",
   "pm_emptyAdmin": "No photos uploaded yet.",
-  "pm_chosen": "{n} of {total} chosen",
+  "pm_chosen": "{n} of {max} chosen · {total} photos",
   "pm_shown": "chosen",
   "pm_hidden": "not chosen",
   "pm_cover": "Card photo for the home page",
@@ -147,5 +147,6 @@
   "err_bad_type": "Not a supported image",
   "err_storage_missing": "Photo storage isn't connected yet.",
   "err_cover_not_shown": "The card photo has to be one of the chosen photos.",
-  "err_not_available": "That photo is no longer available."
+  "err_not_available": "That photo is no longer available.",
+  "err_too_many": "You can choose up to 25 photos. Untick one to choose another."
 }

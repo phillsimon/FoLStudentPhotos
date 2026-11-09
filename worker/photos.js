@@ -8,6 +8,9 @@
 import { students } from "./data.js";
 import { HttpError, readJson, isAdmin, canEditStudent, requireUser, requireAdmin } from "./http.js";
 
+// Most photos a student's page can show, counting ones waiting for review.
+export const MAX_SHOWN = 25;
+
 const MAX_ORIGINAL = 95 * 1024 * 1024; // The Worker's request limit is 100 MB.
 const MAX_VARIANT = 15 * 1024 * 1024;
 
@@ -146,6 +149,9 @@ export async function saveSelection(request, env, slug) {
   const all = await photosFor(env, slug);
   if (cover && !all.some((p) => p.id === cover)) throw new HttpError(400, "bad_request");
   if (cover && !show.has(cover)) throw new HttpError(400, "cover_not_shown");
+  // Phillip's save leaves a student's waiting picks in place, so they count toward the limit too.
+  const waitingKept = isAdmin(user) ? all.filter((p) => p.status === "requested" && !show.has(p.id)).length : 0;
+  if (all.filter((p) => show.has(p.id)).length + waitingKept > MAX_SHOWN) throw new HttpError(400, "too_many");
   const student = await env.DB.prepare("SELECT cover_photo_id, cover_requested_id, cover_requested_at FROM students WHERE slug = ?").bind(slug).first();
   const now = new Date().toISOString();
   const admin = isAdmin(user);
