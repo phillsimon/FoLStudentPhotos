@@ -67,7 +67,7 @@ Seed the super admin account from Worker secrets (`ADMIN_EMAIL`, `ADMIN_PASSWORD
 - Branded with Fountain of Life School logo and colors (see Branding below).
 - Hero image: group photo of the workshop participants and me (uploaded through admin).
 - Workshop description, shown in the visitor's current language.
-- Grid of student cards: each card shows the student's cover photo and first name, links to their page.
+- Grid of student cards: each card shows the student's approved card photo (or their first approved photo) and first name, links to their page.
 - Light/dark mode toggle in the header.
 
 ### Student page
@@ -95,6 +95,14 @@ Seed the super admin account from Worker secrets (`ADMIN_EMAIL`, `ADMIN_PASSWORD
 - Download route: `GET /api/photos/:id/download`. The Worker verifies the session, verifies the user owns the photo's student gallery (or that the site setting allows any student to download any photo), then streams the original from R2 with `Content-Disposition: attachment; filename="{FirstName}_{originalFilename}"`.
 - Originals must never be reachable without this check. No public R2 URLs for originals.
 - Rate-limit login attempts per IP and per login (store counters in D1).
+
+### Choosing which photos go public
+- I upload all of a student's photos. They start private: only the student and I can see them.
+- The student opens "Elegir mis fotos" on their page and ticks the photos they want shown, and taps a star to pick the photo for their card on the homepage. Ticks are sent to me for review; nothing a student picks is public before I approve it. A student can take a photo down at any time without review.
+- In `/admin`, "Photos to review" lists every picked photo grouped by student with a checkbox on each. I tick one or many (or a whole student, or select all) and approve or decline them together. Declined photos show "Not approved" to the student, who can pick them again.
+- The student's card photo pick also waits for my approval ("Card photos to review"). Approving it also approves that photo if it's still waiting.
+- I can tick, untick and star photos myself in the same pop-up on any student page, and my changes publish immediately.
+- Until a student has at least one approved photo, their page and card keep showing the placeholder images.
 
 ### Editing: pencils and pop-ups
 - When signed in, a **pencil icon** appears next to anything the person may edit. Clicking it opens a pop-up with that content. Visitors never see pencils. There is no separate "My photos" page.

@@ -49,7 +49,7 @@ export default function Lightbox({ photos, index, name, onGo, onClose, onEdit })
   useEffect(() => {
     [photos[(index + 1) % count], photos[(index - 1 + count) % count]].forEach((p) => {
       const img = new Image();
-      img.src = imgUrl(p);
+      img.src = imgUrl(p, "web");
     });
   }, [index, photos, count]);
 
@@ -101,7 +101,7 @@ export default function Lightbox({ photos, index, name, onGo, onClose, onEdit })
 
       <button className="lb-arrow lb-prev" onClick={prev} aria-label={t("previous")}>‹</button>
       <figure className="lb-figure" onClick={(e) => e.target === e.currentTarget && onClose()}>
-        <img key={photo.id} src={imgUrl(photo)} alt={photo.title || photo.caption || t("photoBy", { name })} />
+        <img key={photo.id} src={imgUrl(photo, "web")} alt={photo.title || photo.caption || t("photoBy", { name })} />
         {(photo.title || photo.caption) && (
           <figcaption>
             {photo.title && <strong>{photo.title}</strong>}

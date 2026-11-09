@@ -94,5 +94,6 @@ export function useJson(url) {
   return { ...state, reload };
 }
 
-export const imgUrl = (photo) => `/api/img/${photo.id}.svg`;
+// Real photos carry their own addresses (thumb and web). Placeholders fall back to the SVG route.
+export const imgUrl = (photo, size = "thumb") => photo?.[size] || `/api/img/${photo?.id}.svg`;
 export const studentPath = (slug) => `/estudiantes/${slug}`;

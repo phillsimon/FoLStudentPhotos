@@ -6,6 +6,7 @@ import Lightbox from "../components/Lightbox.jsx";
 import Paragraphs from "../components/Paragraphs.jsx";
 import Pencil from "../components/Pencil.jsx";
 import { AdminStatementEditor, PhotoEditor, StudentStatementEditor } from "../components/Editors.jsx";
+import PhotoManager from "../components/PhotoManager.jsx";
 
 export default function StudentPage() {
   const { slug } = useParams();
@@ -35,6 +36,9 @@ export default function StudentPage() {
   const shown = isOwner ? s.statement_es : pick(s, "statement");
   const pendingView = canEdit && s.edit.draft && s.edit.status !== "approved";
   const editingIndex = s.photos.findIndex((p) => p.id === editing);
+  const isAdmin = user?.role === "superadmin";
+  const library = s.library || [];
+  const waiting = library.filter((p) => p.status === "requested").length;
 
   return (
     <article className="student page">
@@ -60,6 +64,19 @@ export default function StudentPage() {
           </section>
         )}
       </header>
+
+      {canEdit && (isAdmin || library.length > 0) && (
+        <div className="photo-tools">
+          <button type="button" className="btn" onClick={() => setEditing("photos")}>
+            {t(isAdmin ? "pm_openAdmin" : "pm_open")}
+          </button>
+          <span className="dialog-hint">
+            {isAdmin
+              ? t("pm_libraryCount", { n: library.length, live: library.filter((p) => p.status === "live").length })
+              : [waiting > 0 && t("pm_waitingCount", { n: waiting }), s.cover?.requested && t("pm_coverWaiting")].filter(Boolean).join(" · ")}
+          </span>
+        </div>
+      )}
 
       {/* Justified grid: each tile's width follows its aspect ratio, so nothing is cropped. */}
       <ul className="photo-grid">
@@ -99,6 +116,9 @@ export default function StudentPage() {
         ) : (
           <AdminStatementEditor student={s} onClose={() => setEditing(null)} onSaved={reload} />
         ))}
+      {editing === "photos" && (
+        <PhotoManager student={s} admin={isAdmin} onClose={() => setEditing(null)} onSaved={reload} />
+      )}
       {editingIndex !== -1 && (
         <PhotoEditor
           key={editing}

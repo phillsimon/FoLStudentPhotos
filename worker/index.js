@@ -1,6 +1,10 @@
 import { students, site, findPhoto } from "./data.js";
+import { HttpError, readJson, isAdmin, canEditStudent, requireUser, requireAdmin } from "./http.js";
 import { ensureDb } from "./schema.js";
 import { translate } from "./translate.js";
+import {
+  toClient, photosFor, getPhoto, uploadPhoto, deletePhoto, serveImage, saveSelection, reviewPhotos, reviewCover, reviewQueue,
+} from "./photos.js";
 import {
   hashPassword, verifyPassword, makeTempPassword, createSession, destroySession, currentUser,
   dropUserSessions, isRateLimited, recordFailure, clearFailures,
@@ -36,14 +40,6 @@ function placeholderSvg(student, photo) {
 </svg>`;
 }
 
-class HttpError extends Error {
-  constructor(status, code) {
-    super(code);
-    this.status = status;
-    this.code = code;
-  }
-}
-
 const LIMITS = { title: 100, caption: 500, studentStatement: 1500, adminStatement: 3000, note: 1000, site: 20000, password: 200 };
 const MIN_PASSWORD = 8;
 const SITE_FIELDS = ["eyebrow_en", "eyebrow_es", "title_en", "title_es", "meta_en", "meta_es", "workshop_en", "workshop_es"];
@@ -60,30 +56,6 @@ function cleanText(value, max) {
   return text;
 }
 const cleanLine = (value, max) => cleanText(value, max).replace(/\s*\n\s*/g, " ");
-
-async function readJson(request) {
-  try {
-    const body = await request.json();
-    if (body && typeof body === "object") return body;
-  } catch {}
-  throw new HttpError(400, "bad_request");
-}
-
-const isAdmin = (user) => user?.role === "superadmin";
-const canEditStudent = (user, slug) => !!user && !user.must_change && (isAdmin(user) || user.student_slug === slug);
-
-async function requireUser(env, request) {
-  const user = await currentUser(env, request);
-  if (!user) throw new HttpError(401, "not_signed_in");
-  if (user.must_change) throw new HttpError(403, "must_change_password");
-  return user;
-}
-
-async function requireAdmin(env, request) {
-  const user = await requireUser(env, request);
-  if (!isAdmin(user)) throw new HttpError(403, "forbidden");
-  return user;
-}
 
 const publicUser = (u) =>
   u && { login: u.login, display_name: u.display_name, role: u.role, student_slug: u.student_slug, must_change: !!u.must_change };
@@ -150,12 +122,26 @@ async function photoTexts(env, ids) {
   return new Map(results.filter((r) => wanted.has(r.photo_id)).map((r) => [r.photo_id, r]));
 }
 
-const listStudent = (s) => ({
-  slug: s.slug,
-  first_name: s.first_name,
-  cover: s.photos.find((p) => p.id === s.cover_photo_id),
-  photo_count: s.photos.length,
-});
+// Placeholder photos (with SVG addresses) show until a student has real photos live.
+const placeholder = (p) => ({ ...p, thumb: `/api/img/${p.id}.svg`, web: `/api/img/${p.id}.svg` });
+
+async function listStudents(env) {
+  const [{ results: live }, { results: rows }] = await Promise.all([
+    env.DB.prepare("SELECT id, student_slug, width, height FROM photos WHERE status = 'live' ORDER BY sort_key, id").all(),
+    env.DB.prepare("SELECT slug, cover_photo_id FROM students").all(),
+  ]);
+  const coverOf = new Map(rows.map((r) => [r.slug, r.cover_photo_id]));
+  return students.map((s) => {
+    const mine = live.filter((p) => p.student_slug === s.slug);
+    const cover = mine.find((p) => p.id === coverOf.get(s.slug)) || mine[0];
+    return {
+      slug: s.slug,
+      first_name: s.first_name,
+      cover: cover ? toClient(cover) : placeholder(s.photos.find((p) => p.id === s.cover_photo_id)),
+      photo_count: mine.length || s.photos.length,
+    };
+  });
+}
 
 async function getStudent(request, env, slug) {
   const i = students.findIndex((s) => s.slug === slug);
@@ -164,22 +150,31 @@ async function getStudent(request, env, slug) {
   const prev = students[(i - 1 + students.length) % students.length];
   const next = students[(i + 1) % students.length];
   const row = await env.DB.prepare("SELECT * FROM students WHERE slug = ?").bind(slug).first();
-  const texts = await photoTexts(env, s.photos.map((p) => p.id));
   const user = await currentUser(env, request);
+  const canEdit = canEditStudent(user, slug);
+  const real = await photosFor(env, slug);
+  const live = real.filter((p) => p.status === "live");
+  const shown = live.length ? live : s.photos;
+  const texts = await photoTexts(env, [...shown, ...(canEdit ? real : [])].map((p) => p.id));
+  const withText = (p) => (live.length ? toClient(p, texts.get(p.id)) : { ...placeholder(p), ...pickText(texts.get(p.id)) });
 
   return Response.json({
     ...s,
     statement_es: row?.statement_es ?? "",
     statement_en: row?.statement_en ?? "",
-    photos: s.photos.map((p) => ({ ...p, title: texts.get(p.id)?.title ?? "", caption: texts.get(p.id)?.caption ?? "" })),
+    photos: shown.map(withText),
     prev: { slug: prev.slug, first_name: prev.first_name },
     next: { slug: next.slug, first_name: next.first_name },
-    // Only the student who owns this page and the super admin see the unpublished draft.
-    ...(canEditStudent(user, slug) && {
+    // Only the student who owns this page and the super admin see the unpublished draft and the full photo library.
+    ...(canEdit && {
       edit: { draft: row?.draft ?? "", status: row?.status ?? "none", review_note: row?.review_note ?? "" },
+      library: real.map((p) => ({ ...toClient(p, texts.get(p.id)), status: p.status, filename: p.filename, bytes: p.original_bytes })),
+      cover: { approved: row?.cover_photo_id ?? null, requested: row?.cover_requested_id ?? null },
     }),
   });
 }
+
+const pickText = (t) => ({ title: t?.title ?? "", caption: t?.caption ?? "" });
 
 async function saveStatement(request, env, slug) {
   const user = await requireUser(env, request);
@@ -221,9 +216,9 @@ async function requestChanges(request, env, slug) {
 
 async function savePhotoText(request, env, id) {
   const user = await requireUser(env, request);
-  const found = findPhoto(id);
-  if (!found) throw new HttpError(404, "not_found");
-  if (!canEditStudent(user, found.student.slug)) throw new HttpError(403, "forbidden");
+  const slug = findPhoto(id)?.student.slug ?? (await getPhoto(env, id))?.student_slug;
+  if (!slug) throw new HttpError(404, "not_found");
+  if (!canEditStudent(user, slug)) throw new HttpError(403, "forbidden");
   const body = await readJson(request);
   const title = cleanLine(body.title, LIMITS.title);
   const caption = cleanText(body.caption, LIMITS.caption);
@@ -267,7 +262,7 @@ async function translateText(request, env) {
 
 async function adminOverview(request, env) {
   await requireAdmin(env, request);
-  const [users, pending, edits] = await Promise.all([
+  const [users, pending, edits, queue, owners] = await Promise.all([
     env.DB.prepare(
       `SELECT id, login, display_name, role, student_slug, must_change, password_hash IS NOT NULL AS has_password, temp_issued_at, password_changed_at, last_login_at
        FROM users ORDER BY role DESC, display_name`
@@ -278,11 +273,15 @@ async function adminOverview(request, env) {
        FROM photo_text p JOIN users u ON u.id = p.updated_by
        WHERE u.role = 'student' ORDER BY p.updated_at DESC LIMIT 20`
     ).all(),
+    reviewQueue(env),
+    env.DB.prepare("SELECT id, student_slug FROM photos").all(),
   ]);
+  const ownerOf = new Map(owners.results.map((r) => [r.id, r.student_slug]));
   return Response.json({
     users: users.results,
     pending: pending.results,
-    photo_edits: edits.results.map((e) => ({ ...e, student_slug: findPhoto(e.photo_id)?.student.slug })),
+    photo_edits: edits.results.map((e) => ({ ...e, student_slug: findPhoto(e.photo_id)?.student.slug ?? ownerOf.get(e.photo_id) })),
+    ...queue,
   });
 }
 
@@ -327,6 +326,9 @@ async function api(request, env, url) {
 
   await ensureDb(env);
 
+  const im = path.match(/^\/api\/photos\/([a-z0-9]+)\/(thumb|web)\.jpg$/);
+  if (im && (method === "GET" || method === "HEAD")) return serveImage(request, env, im[1], im[2], await currentUser(env, request));
+
   if (path === "/api/me" && method === "GET") return Response.json({ user: publicUser(await currentUser(env, request)) });
   if (path === "/api/auth/login" && method === "POST") return login(request, env);
   if (path === "/api/auth/password" && method === "POST") return changePassword(request, env);
@@ -336,7 +338,7 @@ async function api(request, env, url) {
 
   if (path === "/api/site") {
     if (method === "PUT") return saveSite(request, env);
-    if (method === "GET") return Response.json({ ...(await siteContent(env)), students: students.map(listStudent) });
+    if (method === "GET") return Response.json({ ...(await siteContent(env)), students: await listStudents(env) });
   }
   if (path === "/api/translate" && method === "POST") return translateText(request, env);
   if (path === "/api/admin/overview" && method === "GET") return adminOverview(request, env);
@@ -355,6 +357,18 @@ async function api(request, env, url) {
 
   m = path.match(/^\/api\/photos\/([a-z0-9-]+)$/);
   if (m && method === "PATCH") return savePhotoText(request, env, m[1]);
+  if (m && method === "DELETE") return deletePhoto(request, env, m[1]);
+
+  m = path.match(/^\/api\/students\/([a-z0-9-]+)\/selection$/);
+  if (m && method === "PUT") return saveSelection(request, env, m[1]);
+
+  m = path.match(/^\/api\/admin\/students\/([a-z0-9-]+)\/photos$/);
+  if (m && method === "POST") return uploadPhoto(request, env, m[1]);
+
+  m = path.match(/^\/api\/admin\/students\/([a-z0-9-]+)\/cover$/);
+  if (m && method === "POST") return reviewCover(request, env, m[1]);
+
+  if (path === "/api/admin/photos/review" && method === "POST") return reviewPhotos(request, env);
 
   throw new HttpError(404, "not_found");
 }

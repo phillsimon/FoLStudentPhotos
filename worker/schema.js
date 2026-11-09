@@ -57,6 +57,37 @@ const MIGRATIONS = [
       )`,
     ],
   },
+  {
+    // Real photos in R2. Phillip uploads; the student picks which to show; Phillip approves.
+    // status: private (uploaded, only the student and Phillip see it), requested (student picked it, waiting
+    // for review), live (public), declined (Phillip said no; the student can pick it again).
+    version: 2,
+    statements: [
+      `CREATE TABLE IF NOT EXISTS photos (
+        id TEXT PRIMARY KEY,
+        student_slug TEXT NOT NULL REFERENCES students(slug),
+        filename TEXT NOT NULL,
+        original_type TEXT NOT NULL,
+        original_bytes INTEGER NOT NULL,
+        web_bytes INTEGER NOT NULL,
+        thumb_bytes INTEGER NOT NULL,
+        width INTEGER NOT NULL,
+        height INTEGER NOT NULL,
+        capture_date TEXT,
+        sort_key TEXT NOT NULL,
+        status TEXT NOT NULL DEFAULT 'private' CHECK (status IN ('private', 'requested', 'live', 'declined')),
+        requested_at TEXT,
+        reviewed_at TEXT,
+        created_at TEXT NOT NULL
+      )`,
+      "CREATE INDEX IF NOT EXISTS photos_by_student ON photos (student_slug, sort_key)",
+      "CREATE INDEX IF NOT EXISTS photos_by_status ON photos (status)",
+      // The homepage card photo: the approved one, and the student's pick waiting for review.
+      "ALTER TABLE students ADD COLUMN cover_photo_id TEXT",
+      "ALTER TABLE students ADD COLUMN cover_requested_id TEXT",
+      "ALTER TABLE students ADD COLUMN cover_requested_at TEXT",
+    ],
+  },
 ];
 
 async function migrate(db) {

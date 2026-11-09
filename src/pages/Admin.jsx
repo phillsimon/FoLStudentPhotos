@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Link, Navigate } from "react-router-dom";
-import { usePrefs, useJson, studentPath } from "../prefs.jsx";
+import { usePrefs, useJson, studentPath, imgUrl } from "../prefs.jsx";
 import { api, useAuth } from "../auth.jsx";
 
 const when = (iso, lang) => (iso ? new Date(iso).toLocaleDateString(lang, { month: "short", day: "numeric" }) : "");
@@ -54,6 +54,120 @@ function TempPassword({ user, onDone }) {
   );
 }
 
+// Photos students picked for their pages. Tick one or many, then approve or decline them together.
+function PhotoReview({ photos, onDone }) {
+  const { t } = usePrefs();
+  const [picked, setPicked] = useState(() => new Set());
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState("");
+  const live = photos.filter((p) => picked.has(p.id)).map((p) => p.id); // Ignore ticks on photos that left the queue.
+  const groups = [];
+  for (const p of photos) {
+    const g = groups.find((x) => x.slug === p.student_slug);
+    if (g) g.photos.push(p);
+    else groups.push({ slug: p.student_slug, name: p.first_name, photos: [p] });
+  }
+
+  const flip = (ids, on) =>
+    setPicked((cur) => {
+      const next = new Set(cur);
+      ids.forEach((id) => (on ? next.add(id) : next.delete(id)));
+      return next;
+    });
+
+  const act = async (action) => {
+    setBusy(true);
+    setError("");
+    try {
+      await api("/api/admin/photos/review", "POST", { ids: live, action });
+      setPicked(new Set());
+      onDone();
+    } catch {
+      setError(t("err_server_error"));
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  if (!photos.length) return <p className="status">{t("nothingToReview")}</p>;
+  const all = photos.every((p) => picked.has(p.id));
+
+  return (
+    <div className="review-photos">
+      <div className="review-bar">
+        <label className="check">
+          <input type="checkbox" checked={all} onChange={(e) => flip(photos.map((p) => p.id), e.target.checked)} />
+          {t("selectAll")}
+        </label>
+        <span className="dialog-hint">{t("selectedCount", { n: live.length })}</span>
+        <button type="button" className="btn small" onClick={() => act("decline")} disabled={busy || !live.length}>{t("declineSelected")}</button>
+        <button type="button" className="btn small primary" onClick={() => act("approve")} disabled={busy || !live.length}>{t("approveSelected")}</button>
+      </div>
+      {error && <p className="form-error" role="alert">{error}</p>}
+      {groups.map((g) => (
+        <div key={g.slug} className="review-group">
+          <h3>
+            <label className="check">
+              <input type="checkbox" checked={g.photos.every((p) => picked.has(p.id))} onChange={(e) => flip(g.photos.map((p) => p.id), e.target.checked)} />
+              {g.name} ({g.photos.length})
+            </label>
+            <Link className="dialog-hint" to={studentPath(g.slug)}>{t("viewPage")}</Link>
+          </h3>
+          <ul className="pm-grid">
+            {g.photos.map((p) => (
+              <li key={p.id} className={`pm-tile${picked.has(p.id) ? " on" : ""}`}>
+                <button type="button" className="pm-pick" aria-pressed={picked.has(p.id)} onClick={() => flip([p.id], !picked.has(p.id))}
+                  aria-label={t("photoBy", { name: g.name })}>
+                  <img src={imgUrl(p)} alt="" loading="lazy" />
+                  <span className="pm-check" aria-hidden="true">{picked.has(p.id) ? "✓" : ""}</span>
+                </button>
+                <a className="pm-zoom" href={p.web} target="_blank" rel="noreferrer" title={t("openLarge")} aria-label={t("openLarge")}>⤢</a>
+              </li>
+            ))}
+          </ul>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+function CoverReview({ covers, onDone }) {
+  const { t } = usePrefs();
+  const [busy, setBusy] = useState("");
+  const act = async (slug, action) => {
+    setBusy(slug);
+    try {
+      await api(`/api/admin/students/${slug}/cover`, "POST", { action });
+      onDone();
+    } finally {
+      setBusy("");
+    }
+  };
+  if (!covers.length) return null;
+  return (
+    <>
+      <h2>{t("coverReviews")} ({covers.length})</h2>
+      <ul className="admin-list covers">
+        {covers.map((c) => (
+          <li key={c.slug}>
+            <img className="cover-thumb" src={c.thumb} alt="" />
+            <div>
+              <strong>{c.first_name}</strong>
+              {c.status === "requested" && <span className="dialog-hint"> · {t("coverAlsoApprovesPhoto")}</span>}
+            </div>
+            <div className="row-actions">
+              <button type="button" className="btn small" disabled={busy === c.slug} onClick={() => act(c.slug, "decline")}>{t("decline")}</button>
+              <button type="button" className="btn small primary" disabled={busy === c.slug} onClick={() => act(c.slug, "approve")}>{t("approve")}</button>
+            </div>
+          </li>
+        ))}
+      </ul>
+    </>
+  );
+}
+
+const gb = (n) => (n / 1024 ** 3).toFixed(2);
+
 export default function Admin() {
   const { t, lang } = usePrefs();
   const { user, ready } = useAuth();
@@ -70,6 +184,11 @@ export default function Admin() {
   return (
     <section className="page admin">
       <h1>{t("admin")}</h1>
+
+      <h2>{t("photoReviews")} ({data.photo_reviews.length})</h2>
+      <PhotoReview photos={data.photo_reviews} onDone={reload} />
+
+      <CoverReview covers={data.cover_reviews} onDone={reload} />
 
       <h2>{t("reviewQueue")} ({data.pending.length})</h2>
       {data.pending.length === 0 ? (
@@ -97,6 +216,8 @@ export default function Admin() {
           </li>
         ))}
       </ul>
+
+      <p className="dialog-hint storage">{t("storageUsed", { used: gb(data.storage_bytes) })}</p>
 
       <h2>{t("recentCaptionEdits")}</h2>
       {data.photo_edits.length === 0 ? (
