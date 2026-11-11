@@ -217,6 +217,17 @@ async function saveStatement(request, env, slug) {
   return Response.json({ ok: true });
 }
 
+// Phillip removes a statement entirely: the published text in both languages and any draft waiting for review.
+async function deleteStatement(request, env, slug) {
+  await requireAdmin(env, request);
+  if (!students.some((s) => s.slug === slug)) throw new HttpError(404, "not_found");
+  const now = new Date().toISOString();
+  await env.DB.prepare(
+    `UPDATE students SET statement_es = '', statement_en = '', draft = '', review_note = '', status = 'none', reviewed_at = ?, updated_at = ? WHERE slug = ?`
+  ).bind(now, now, slug).run();
+  return Response.json({ ok: true });
+}
+
 async function requestChanges(request, env, slug) {
   await requireAdmin(env, request);
   const note = cleanText((await readJson(request)).note, LIMITS.note);
@@ -373,6 +384,7 @@ async function api(request, env, url) {
 
   m = path.match(/^\/api\/students\/([a-z0-9-]+)\/statement$/);
   if (m && method === "PUT") return saveStatement(request, env, m[1]);
+  if (m && method === "DELETE") return deleteStatement(request, env, m[1]);
 
   m = path.match(/^\/api\/students\/([a-z0-9-]+)\/statement\/request-changes$/);
   if (m && method === "POST") return requestChanges(request, env, m[1]);

@@ -94,6 +94,16 @@ export function AdminStatementEditor({ student, onClose, onSaved }) {
       onClose();
     });
 
+  const hasStatement = !!(student.statement_es || student.statement_en || student.edit.draft);
+  const remove = () => {
+    if (!window.confirm(t("deleteStatementConfirm", { name: student.first_name }))) return;
+    run(async () => {
+      await api(`/api/students/${student.slug}/statement`, "DELETE");
+      onSaved();
+      onClose();
+    });
+  };
+
   const noteToSpanish = () => run(async () => setNote((await api("/api/translate", "POST", { text: note, source: "en" })).text));
 
   return (
@@ -114,6 +124,9 @@ export function AdminStatementEditor({ student, onClose, onSaved }) {
 
       <ErrorLine text={error} />
       <div className="dialog-actions">
+        {hasStatement && !noting && (
+          <button type="button" className="btn danger push-left" onClick={remove} disabled={busy || translating}>{t("deleteStatement")}</button>
+        )}
         <button type="button" className="btn" onClick={onClose} disabled={busy}>{t("cancel")}</button>
         {pending && !noting && (
           <button type="button" className="btn" onClick={() => setNoting(true)} disabled={busy}>{t("requestChanges")}</button>

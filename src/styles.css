@@ -198,6 +198,8 @@ main > .status { max-width: 1100px; margin: 48px auto; padding: 0 16px; }
 .dialog-hint { color: var(--muted); font-size: 15px; }
 .dialog-actions { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 10px; margin-top: 16px; position: sticky; bottom: -22px;
                   padding: 12px 0; background: var(--surface); }
+.dialog-actions .push-left { margin-right: auto; }
+.btn.danger { color: var(--red); border-color: var(--red); }
 .note-box { margin-top: 16px; }
 .btn { font: 800 16px/1.2 var(--display); min-height: 44px; padding: 10px 18px; color: var(--fg); background: var(--surface);
        border: 1px solid var(--muted); border-radius: 8px; }

@@ -155,5 +155,7 @@
   "testEmail_no_recipient": "No se envió: falta ADMIN_EMAIL.",
   "testEmail_rejected": "Resend lo rechazó:",
   "testEmail_network": "No se pudo conectar con Resend:",
-  "testEmail_server": "Hubo un error en el servidor."
+  "testEmail_server": "Hubo un error en el servidor.",
+  "deleteStatement": "Eliminar declaración del artista",
+  "deleteStatementConfirm": "¿Eliminar la declaración del artista de {name}? Se borra el texto publicado en los dos idiomas y cualquier borrador pendiente de revisión. No se puede deshacer."
 }

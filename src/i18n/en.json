@@ -155,5 +155,7 @@
   "testEmail_no_recipient": "Not sent: ADMIN_EMAIL isn't set.",
   "testEmail_rejected": "Resend refused it:",
   "testEmail_network": "Couldn't reach Resend:",
-  "testEmail_server": "Something went wrong on the server."
+  "testEmail_server": "Something went wrong on the server.",
+  "deleteStatement": "Delete statement",
+  "deleteStatementConfirm": "Delete {name}'s artist statement? This removes the published text in both languages and any draft waiting for review. It can't be undone."
 }
